@@ -7,3 +7,4 @@ import './polish.css'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>
 )
+import './native-v3.css'

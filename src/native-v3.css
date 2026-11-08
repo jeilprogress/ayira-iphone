@@ -1,0 +1,126 @@
+/* Ayira Ross — iOS 18-inspired fidelity pass, Nov 2026.
+   Independent styling, inspired by familiar iOS interaction patterns. */
+:root { --ios-blue:#007aff; --ios-muted:#8e8e93; --ios-line:#c6c6c832; --ios-canvas:#f2f2f7; }
+html,body,#root { min-height:100dvh; }
+.site-wrap { background:#f2f2f7!important; padding:10px!important; }
+.iphone-frame { border:5px solid #1c1c22!important; background:#111118!important; box-shadow:0 0 0 1px #545660,0 9px 18px #0002,0 24px 65px #0003!important; }
+.iphone-glass { background:#fff!important; }
+.statusbar { padding:8px 29px 0 30px; }
+.status-time { letter-spacing:-.45px; }
+.status-icons { gap:3px; }
+.app-animate { animation: iosLaunchV3 .43s cubic-bezier(.2,.9,.24,1) both; }
+@keyframes iosLaunchV3 { from { transform:scale(.9); filter:blur(5px); opacity:.72; border-radius:38px;} to {transform:scale(1);filter:blur(0);opacity:1;border-radius:0;} }
+.screen-body, .app-page { overscroll-behavior:contain; }
+.story-wallpaper-image { position:absolute; inset:0; display:block; width:100%; height:100%; object-fit:cover; object-position:center; pointer-events:none; user-select:none; }
+.home-screen, .ios-lock { isolation:isolate; }
+.home-screen > .story-wallpaper-image, .ios-lock > .story-wallpaper-image { z-index:-1; }
+.home-screen > :not(.story-wallpaper-image) { position:relative; z-index:1; }
+.home-screen { overflow:hidden; }
+.home-grid { gap:15px 8px; }
+.home-app { font-size:11px; letter-spacing:-.12px; }
+.home-app:active .app-icon, .dock button:active .app-icon { transform:scale(.92); }
+.app-icon { box-shadow:0 2px 7px #0808142a; transition:transform .19s cubic-bezier(.2,.8,.2,1); }
+.home-search-pill { border-radius:11px; width:max-content; }
+.weather-widget, .calendar-widget { cursor:pointer; }
+.ios-lock .lock-center { isolation:isolate; }
+.ios-lock .lock-time { font-size:90px; font-weight:250; font-variant-numeric:tabular-nums; line-height:1.02; letter-spacing:-5.2px; }
+.ios-lock .lock-date { font-weight:520; }
+/* General in-app navigation and list visual language */
+.app-page { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif; }
+.app-page h1 { font-size:34px; letter-spacing:-1.35px; font-weight:740; }
+.app-page h2 { letter-spacing:-.55px; }
+.app-page .ios-group, .settings-group, .settings-profile { box-shadow:none; }
+.search-input { border-radius:10px; background:#e7e7ed; border:0; }
+.search-input input { background:transparent; }
+/* Messages - inset separators, native header and bubbles */
+.messages-list { padding-top:61px; }
+.messages-list > h1 { padding:0 19px; margin:12px 0 15px; }
+.messages-nav { height:36px; display:flex; justify-content:space-between; padding:0 22px; align-items:center; color:var(--ios-blue); }
+.thread-list-item { border-bottom:0; position:relative; min-height:79px; padding:9px 16px 9px 0; }
+.thread-list-item:after { content:''; position:absolute; height:.5px; background:#c6c6c8a8; bottom:0; left:70px; right:0; }
+.thread-list .avatar { flex-shrink:0; }
+.thread-preview-top strong { font-size:16px; color:#16161b; }
+.thread-preview-top span { color:#9a9aa2; }
+.preview-text { font-size:14px; color:#8e8e93; }
+.messages-thread { padding-top:58px; }
+.thread-header { height:74px; background:rgba(248,248,250,.92); border-bottom:.5px solid #aaaab34b; padding:0 13px 6px; }
+.thread-person { min-width:0; }
+.thread-person .avatar { border:2px solid #fff; box-shadow:0 1px 3px #0002; }
+.thread-person span { color:#303035; letter-spacing:-.25px; }
+.thread-messages { padding:17px 13px 5px; gap:4px; }
+.chat-date-separator { text-align:center; font-weight:500; margin:14px 7px 24px; color:#8e8e93; }
+.message-bubble { box-shadow:none; max-width:81%; padding:10px 13px 11px; border-radius:20px; font-size:15.5px; line-height:1.34; white-space:pre-wrap; overflow-wrap:anywhere; }
+.sent .message-bubble { background:#0084ff; border-bottom-right-radius:5px; }
+.received .message-bubble { background:#e9e9eb; border-bottom-left-radius:5px; }
+.composer-wrap { background:rgba(249,249,251,.97); border-top:.5px solid #c8c8d08c; padding:7px 12px 25px; align-items:center; }
+.circle-plus { background:#b2b2b7; color:white; width:31px;height:31px; border-radius:50%; }
+.composer { border:1px solid #d0d0d5; background:white; height:37px; }
+.composer input { font-size:15px; }
+.send-active { background:#007aff; }
+/* All contact-photo presentations use one image source. No invented images for other contacts. */
+.avatar { position:relative; overflow:hidden; flex-shrink:0; border-radius:50%; }
+.story-avatar-photo { position:absolute; inset:0; width:100%;height:100%;object-fit:cover;object-position:center; z-index:2; }
+.contact-sheet .avatar {box-shadow:0 2px 8px #0001;}
+/* Photos app: iOS 18 collection structure, not an invented colorful photo library */
+.photos-app { background:#fff; }
+.photos-top { padding:69px 19px 12px; align-items:center; }
+.photos-top h1 { letter-spacing:-1.35px; }
+.photos-scroller { padding:0 10px 105px; }
+.photo-section-title { margin:8px 11px 14px; }
+.photos-native-empty { display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; min-height:330px; gap:10px; padding:24px; color:#a1a1aa; }
+.photos-native-empty svg { color:#c3c3c8; }
+.photos-native-empty strong { color:#303036; font-size:19px; }
+.photos-native-empty span { font-size:13px; line-height:1.45; max-width:250px; }
+.photos-native-empty button { color:#007aff; font-size:14px; margin-top:6px; }
+.photo-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:2px; }
+.photo-grid .photo-tile { aspect-ratio:1; border-radius:0; }
+.photo-grid .photo-tile img {object-fit:cover;width:100%;height:100%;}
+.photos-tabs { background:rgba(248,248,252,.92);border-top:.5px solid #dedee1;padding-bottom:21px; }
+.photos-tabs button {font-weight:550;}
+.photos-tabs button.active {color:#007aff;}
+.collections-native {display:flex;flex-direction:column;gap:18px;padding:0 10px 100px;}
+.collections-native h2 {font-size:23px; margin-top:10px;}
+.collections-native > article {background:#f4f4f7;border-radius:15px;padding:16px;display:flex;gap:14px;align-items:center;}
+.collections-native .coll-symbol {width:55px;height:55px;border-radius:13px;background:#e9e9ef;display:grid;place-items:center;color:#767680;}
+.collections-native strong {font-size:15px;display:block;color:#2d2d33;}
+.collections-native span {font-size:12px;color:#85858d;}
+/* Notes */
+.notes-app { background:#f2f2f7; }
+.notes-nav { padding:0 22px; height:42px; margin-top:57px; }
+.notes-app > h1 { padding:0 20px; margin:10px 0 12px; }
+.notes-app > .search-input { margin:0 18px 18px; }
+.notes-list { background:#fff; border-radius:13px; margin:0 16px; padding:0 0 40px; }
+.note-item {border-bottom:.5px solid #d6d6d9; min-height:71px; margin-left:14px; padding:12px 14px 11px 0;}
+.note-item:last-child{border-bottom:0;}
+.note-item strong {letter-spacing:-.35px;font-size:17px;}
+.note-item span {font-size:13px;}
+.note-item em {font-style:normal; color:#96969f;}
+.notes-bottom {background:rgba(248,248,250,.96);backdrop-filter:blur(17px);}
+.notes-edit-header { margin-top:57px; }
+.note-editor { padding:12px 23px 55px; font-size:16.5px; line-height:1.6; }
+.notes-toolbar {background:#f8f8fa;}
+/* Calendar */
+.calendar-app{background:#fff;}
+.calendar-nav { padding:61px 19px 6px;}
+.calendar-app > h1 {padding:0 20px;font-size:31px; margin:7px 0 12px;}
+.weekday-labels { color:#8e8e93; font-size:11px; margin-top:10px; }
+.calendar-grid {gap:0; padding:0 13px 18px;}
+.calendar-grid button { border-radius:0!important; min-height:61px; border-top:.5px solid #e5e5e9; }
+.calendar-grid button.chosen span {background:#e93d34;color:#fff;border-radius:50%;}
+.calendar-grid button.today:not(.chosen) span{color:#e93d34;}
+.calendar-app > h3 {padding:0 21px; font-size:17px; color:#222; }
+.calendar-event-list{padding:0 16px 70px;}
+/* Settings */
+.settings-app { background:#f2f2f7; }
+.settings-app > .app-header, .settings-app > .settings-profile, .settings-app > .settings-group {margin-left:17px;margin-right:17px;}
+.settings-group {border-radius:12px;overflow:hidden;}
+.setting-row{height:51px; background:#fff; border-bottom:.5px solid #c7c7cb88;}
+.setting-row:last-child{border:0;}
+.setting-symbol {width:30px;height:30px;}
+/* Phone */
+.phone-app {background:#fff;}
+.recents-list { background:#fff; }
+.phone-tabs{background:rgba(250,250,252,.96);border-top:.5px solid #d8d8dd;}
+/* Reconcile small screens with safe tap sizes */
+@media(max-width:400px) { .ios-lock .lock-time{font-size:clamp(62px,20vw,87px);} .photo-grid{grid-template-columns:repeat(3,1fr);} .notes-nav{margin-top:50px;} }
+@media(prefers-reduced-motion: reduce) { .app-animate {animation:none!important;} }

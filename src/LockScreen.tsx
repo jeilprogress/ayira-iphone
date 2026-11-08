@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BellOff, Camera, ChevronUp, Flashlight, LockKeyhole, MessageCircle, Delete } from 'lucide-react'
+import StoryMedia from './StoryMedia'
 
 const CODE = '0215'
 const STORE = 'ayira-phone-v2:passcode-lockout'
@@ -67,7 +68,7 @@ export default function LockScreen({unlock,wall,sound,play,requested}:{unlock:()
     return () => window.removeEventListener('keydown',onKey)
   },[passcode,entry,lock,locked,shake])
   const date = new Date(now)
-  return <div className={`lock-screen ios-lock wallpaper-${wall} ${passcode?'passcode-active':''}`}>
+  return <div className={`lock-screen ios-lock wallpaper-${wall} ${passcode?'passcode-active':''}`}><StoryMedia name="lockscreen" className="story-wallpaper-image" alt=""/>
     {!passcode ? <>
       <div className="lock-center"><LockKeyhole size={17} strokeWidth={2.5}/><div className="lock-date">{date.toLocaleDateString('en-US',{timeZone:'Asia/Manila',weekday:'long',month:'long',day:'numeric'})}</div><div className="lock-time">{date.toLocaleTimeString('en-US',{timeZone:'Asia/Manila',hour:'numeric',minute:'2-digit',hour12:false})}</div></div>
       <button className="lock-notif" onClick={activate} aria-label="Open notification and unlock"><div className="lock-notif-title"><span><span className="notif-messages-icon"><MessageCircle size={12} fill="white" stroke="white"/></span> MESSAGES</span><span>now</span></div><strong>Baby</strong><p>Text me when you’re free, okay? 🤍</p></button>
