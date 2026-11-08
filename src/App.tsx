@@ -161,35 +161,67 @@ function Notes({notes}: {notes:Note[];setNotes:Local<Note[]>[1]}) {
   const all=Array.isArray(notes)?notes:defaultNotes
   const items=all.filter(n=>(n.title+' '+n.body).toLowerCase().includes(search.toLowerCase())).sort((a,b)=>b.updated-a.updated)
   const active=all.find(n=>n.id===selected)
-  if(active)return <div className="app-page ios5-notes ios5-note-open">
-    <div className="ios5-notes-nav"><button onClick={()=>setSelected(null)}><ChevronLeft size={23}/>Notes</button><span/></div>
-    <div className="ios5-note-reading scroll-area">
-      <div className="ios5-note-date">{new Date(active.updated).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
-      <h1>{active.title}</h1>
-      {active.body.split('\n').filter((s,i)=>s.trim() && !(i===0&&s.trim()===active.title)).map((line,i)=><p key={i}>{line}</p>)}
+  if(active)return <div className="app-page notes-app story-notes-app">
+    <div className="notes-edit-header"><button onClick={()=>setSelected(null)}><ChevronLeft size={23}/>Notes</button><button onClick={()=>setSelected(null)}>Done</button></div>
+    <div className="note-reading scroll-area">
+      <div className="note-date">{new Date(active.updated).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+      <h2>{active.title}</h2>
+      {active.body.split('\n').filter((line,i)=>line.trim()&&!(i===0&&line.trim()===active.title)).map((line,i)=><p key={i}>{line}</p>)}
     </div>
-    <div className="ios5-notes-footer"><span>{all.length} Notes</span><span className="ios5-readonly-mark"><LockKeyhole size={14}/> Read Only</span></div>
+    <div className="notes-toolbar story-notes-toolbar">
+      <button disabled aria-label="Delete note unavailable"><Trash2 size={22}/></button>
+      <button disabled aria-label="Formatting unavailable"><span className="aa">Aa</span></button>
+      <span>{all.length} Notes</span>
+      <button disabled aria-label="New note unavailable"><SquarePen size={23}/></button>
+    </div>
   </div>
-  if(folders)return <div className="app-page ios5-notes">
-    <div className="ios5-notes-nav"><button onClick={()=>setFolders(false)}>Back</button></div>
+  if(folders)return <div className="app-page notes-app story-notes-app">
+    <div className="notes-nav"><button onClick={()=>setFolders(false)}><ChevronLeft size={23}/>Notes</button></div>
     <h1>Folders</h1><div className="ios5-folder-label">ON MY IPHONE</div>
-    <button className="ios5-folder-row" onClick={()=>setFolders(false)}><Folder size={23} color="#dfaa20" fill="#dfaa20"/><span>Notes</span><small>{all.length}</small><ChevronRight size={18}/></button>
+    <button className="ios5-folder-row" onClick={()=>setFolders(false)}><Folder size={23} color="#dfa82f" fill="#dfa82f"/><span>Notes</span><small>{all.length}</small><ChevronRight size={18}/></button>
   </div>
-  return <div className="app-page ios5-notes">
-    <div className="ios5-notes-nav"><button onClick={()=>setFolders(true)}><ChevronLeft size={23}/>Folders</button><span className="ios5-notes-lock"><LockKeyhole size={17}/></span></div>
+  return <div className="app-page notes-app story-notes-app">
+    <div className="notes-nav"><button onClick={()=>setFolders(true)}><ChevronLeft size={23}/>Folders</button><button disabled aria-label="New note unavailable"><SquarePen size={23}/></button></div>
     <h1>Notes</h1>
-    <label className="ios5-notes-search"><Search size={18}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search" aria-label="Search Notes"/></label>
-    <div className="ios5-note-list scroll-area">{items.map(n=><button key={n.id} onClick={()=>setSelected(n.id)} className="ios5-note-row"><strong>{n.title}</strong><span><time>{new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</time> {n.body.split('\n').slice(1).join(' ').slice(0,90)||'No additional text'}</span></button>)}{!items.length&&<div className="ios5-no-results">No Notes Found</div>}</div>
-    <div className="ios5-notes-footer"><span>{all.length} Notes</span><span className="ios5-readonly-mark"><LockKeyhole size={14}/> Read Only</span></div>
+    <label className="search-input"><Search size={18}/><input placeholder="Search" aria-label="Search Notes" value={search} onChange={e=>setSearch(e.target.value)}/></label>
+    <div className="notes-list scroll-area">{items.map(n=><button key={n.id} className="note-item" onClick={()=>setSelected(n.id)}>
+      <strong>{n.title}</strong><span>{new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'})} <em>{n.body.split('\n').slice(1).join(' ').trim().slice(0,70)||' '}</em></span>
+    </button>)}{!items.length&&<div className="ios5-no-results">No Notes Found</div>}</div>
+    <div className="notes-bottom"><span>{all.length} Notes</span><button disabled aria-label="Create note unavailable"><SquarePen size={23}/></button></div>
   </div>
 }
-function CalendarApp({events,setEvents}: {events:CalEvent[];setEvents:Local<CalEvent[]>[1]}){
-  const now=new Date(),[month,setMonth]=useState(new Date(now.getFullYear(),now.getMonth(),1)),[day,setDay]=useState(dateISO(now)),[add,setAdd]=useState(false),[title,setTitle]=useState(''),[time,setTime]=useState('10:00')
-  const first=new Date(month.getFullYear(),month.getMonth(),1),days=new Date(month.getFullYear(),month.getMonth()+1,0).getDate(),offset=first.getDay();const cells=Array.from({length:Math.ceil((days+offset)/7)*7},(_,i)=>{const d=i-offset+1;return d>=1&&d<=days?dateISO(new Date(month.getFullYear(),month.getMonth(),d)):''})
-  const shift=(amount:number)=>setMonth(m=>new Date(m.getFullYear(),m.getMonth()+amount,1))
-  const addEvent=()=>{if(!title.trim())return;setEvents(old=>[...old,{id:uid(),date:day,title:title.trim(),time,color:'#e7ae70'}]);setTitle('');setAdd(false)}
-  return <div className="app-page calendar-app"><div className="calendar-nav"><button onClick={()=>{setMonth(new Date(now.getFullYear(),now.getMonth(),1));setDay(dateISO(now))}}>Today</button><div><IconButton onClick={()=>shift(-1)} aria="Previous month"><ChevronLeft/></IconButton><IconButton onClick={()=>shift(1)} aria="Next month"><ChevronRight/></IconButton><IconButton onClick={()=>setAdd(true)} aria="Add event"><Plus/></IconButton></div></div><h1>{month.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</h1><div className="weekday-labels">{['S','M','T','W','T','F','S'].map((d,i)=><span key={i}>{d}</span>)}</div><div className="calendar-grid">{cells.map((d,i)=><button key={i} disabled={!d} onClick={()=>setDay(d)} className={`${d===day?'chosen':''} ${d===dateISO(now)?'today':''}`}><span>{d?Number(d.slice(-2)):''}</span>{events.some(e=>e.date===d)&&<i/>}</button>)}</div><div className="calendar-divider"/><h3>{new Date(day+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</h3><div className="calendar-event-list scroll-area">{events.filter(e=>e.date===day).map(e=><div key={e.id} className="event-row"><span className="event-bar" style={{background:e.color}}/><div><strong>{e.title}</strong><span>{e.time}</span></div><button onClick={()=>setEvents(old=>old.filter(x=>x.id!==e.id))} aria-label="Delete event"><X size={17}/></button></div>)}{events.every(e=>e.date!==day)&&<div className="no-events">No events scheduled<br/><span>Tap + to add one.</span></div>}</div>{add&&<div className="modal-shade" onClick={()=>setAdd(false)}><div className="small-modal" onClick={e=>e.stopPropagation()}><h2>New Event</h2><label>Title<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Event title" autoFocus/></label><label>Date<input type="date" value={day} onChange={e=>setDay(e.target.value)}/></label><label>Time<input type="time" value={time} onChange={e=>setTime(e.target.value)}/></label><div className="modal-buttons"><button onClick={()=>setAdd(false)}>Cancel</button><button onClick={addEvent}>Add</button></div></div></div>}</div>
+
+function CalendarApp({events}: {events:CalEvent[];setEvents:Local<CalEvent[]>[1]}){
+  const storyMonth=new Date(2019,2,1)
+  const [month,setMonth]=useState(storyMonth)
+  const [day,setDay]=useState('2019-03-30')
+  const cells=Array.from({length:Math.ceil((new Date(month.getFullYear(),month.getMonth()+1,0).getDate()+new Date(month.getFullYear(),month.getMonth(),1).getDay())/7)*7},(_,i)=>{
+    const d=i-new Date(month.getFullYear(),month.getMonth(),1).getDay()+1
+    return d>=1&&d<=new Date(month.getFullYear(),month.getMonth()+1,0).getDate()?dateISO(new Date(month.getFullYear(),month.getMonth(),d)):''
+  })
+  const remembered:CalEvent={id:'ayira-2019-03-30',date:'2019-03-30',title:'Her birthday',time:'All-day',color:'#e74942'}
+  const all=[remembered,...(Array.isArray(events)?events:[]).filter(e=>e.id!==remembered.id)]
+  const visible=all.filter(e=>e.date===day)
+  const shift=(n:number)=>setMonth(m=>new Date(m.getFullYear(),m.getMonth()+n,1))
+  return <div className="app-page calendar-app story-calendar">
+    <div className="calendar-nav"><button onClick={()=>{setMonth(storyMonth);setDay('2019-03-30')}}>2019</button><div>
+      <IconButton onClick={()=>shift(-1)} aria="Previous month"><ChevronLeft/>
+      </IconButton><IconButton onClick={()=>shift(1)} aria="Next month"><ChevronRight/></IconButton>
+      <button className="story-calendar-add" disabled aria-label="Add event unavailable"><Plus size={22}/></button>
+    </div></div>
+    <h1>{month.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</h1>
+    <div className="weekday-labels">{['S','M','T','W','T','F','S'].map((d,i)=><span key={i}>{d}</span>)}</div>
+    <div className="calendar-grid">{cells.map((d,i)=><button key={i} disabled={!d} onClick={()=>setDay(d)} className={(d===day?'chosen ':'')+(d==='2019-03-30'?'has-story-date':'')}>
+      <span>{d?Number(d.slice(-2)):''}</span>{all.some(e=>e.date===d)&&<i/>}
+    </button>)}</div>
+    <div className="calendar-divider"/>
+    <h3>{new Date(day+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</h3>
+    <div className="calendar-event-list scroll-area">{visible.map(e=><div key={e.id} className="event-row"><span className="event-bar" style={{background:e.color}}/><div>
+      <strong>{e.title}</strong><span>{e.time}</span>{e.id===remembered.id&&<p className="story-calendar-note">Her birthday, give her the gift (or don't).</p>}
+    </div></div>)}{!visible.length&&<div className="no-events">No Events</div>}</div>
+  </div>
 }
+
 function ContactsApp({openMessage}:{openMessage:(id:string)=>void}){
   const [selected,setSelected]=useState<Contact|null>(null),[q,setQ]=useState('')
   if(selected)return <div className="app-page contacts-app"><div className="simple-nav"><button onClick={()=>setSelected(null)}><ChevronLeft size={24}/>Contacts</button></div><div className="contact-detail"><Avatar person={selected} size={100}/><h1>{selected.name}</h1><p>{selected.fullName}</p><div className="contact-actions"><button onClick={()=>openMessage(selected.id)}><MessageCircle size={23}/>message</button><button><Phone size={23}/>call</button><button><Video size={23}/>video</button><button><Mail size={23}/>mail</button></div><div className="ios-group"><small>mobile</small><strong>{selected.number}</strong></div><div className="ios-group ios-blue-text">Share Contact</div><div className="ios-group ios-blue-text">Add to Favorites</div></div></div>
