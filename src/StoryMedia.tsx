@@ -6,9 +6,9 @@ import { useState } from 'react'
  */
 export type StoryMediaName = 'lockscreen' | 'homescreen' | 'baby'
 const files: Record<StoryMediaName, string> = {
-  lockscreen: 'media/lockscreen.jpg',
-  homescreen: 'media/homescreen.jpg',
-  baby: 'media/baby.jpg'
+  lockscreen: 'media/ayira-wallpaper.webp',
+  homescreen: 'media/ayira-wallpaper.webp',
+  baby: 'media/baby.webp'
 }
 export default function StoryMedia({name, className='', alt=''}: {name:StoryMediaName, className?:string, alt?:string}) {
   const [failed,setFailed] = useState(false)

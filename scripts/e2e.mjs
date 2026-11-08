@@ -15,6 +15,7 @@ try{
   const errors=[]
   page.on('pageerror',error=>errors.push(error.message))
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'})
+  assert.ok(await page.locator('.ios-lock .story-wallpaper-image').evaluate(e=>e instanceof HTMLImageElement && e.naturalWidth>0),'Author supplied lock wallpaper should load')
   const box=await page.locator('.iphone-frame').boundingBox()
   assert.ok(box,'iPhone frame must exist')
   assert.ok(box.height/box.width>1.95 && box.height/box.width<2.2,`iPhone proportions ${box.width}×${box.height}`)
@@ -44,8 +45,10 @@ try{
   await page.locator('.lock-swipe-label').click()
   await page.keyboard.type('0215',{delay:40})
   await page.waitForSelector('.home-screen')
+  assert.ok(await page.locator('.home-screen .story-wallpaper-image').evaluate(e=>e instanceof HTMLImageElement && e.naturalWidth>0),'Author supplied home wallpaper should load')
   await page.locator('.home-app').filter({hasText:'Messages'}).first().click()
   await page.locator('.thread-list-item').filter({hasText:'Baby'}).first().click()
+  assert.ok(await page.locator('.thread-person .story-avatar-photo').evaluate(e=>e instanceof HTMLImageElement && e.naturalWidth>0),'Matt contact photo should load')
   await page.getByRole('textbox',{name:'Type a message'}).fill('hi baby')
   await page.getByRole('button',{name:'Send message'}).click()
   await page.getByText('hi baby',{exact:true}).waitFor({timeout:5000})

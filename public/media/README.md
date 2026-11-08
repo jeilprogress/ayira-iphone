@@ -1,17 +1,7 @@
-# Ayira's story media
+# Ayira Ross story media
 
-Put actual image files in this directory, committed to the `main` branch:
+- `ayira-wallpaper.webp`: the same Shiba drawing for both the Lock Screen and the Home Screen, supplied by the author.
+- `baby.webp`: the author-supplied contact photograph for Matt (saved as Baby).
+- Other contacts intentionally keep their initials until the author supplies photographs.
 
-- `lockscreen.jpg` — cropped image for Ayi's iPhone lock-screen **wallpaper**, not a screenshot with clock and buttons.
-- `homescreen.jpg` — cropped image for Ayi's home-screen **wallpaper**, not a screenshot with app icons.
-- `baby.jpg` — Matt / Baby's contact photo.
-
-Images must be the photographs, not Kommodo screenshot-sharing HTML pages.
-The app attempts to load these images and automatically uses the existing gradients and initials when they aren't supplied.
-The author's reference links (provided for design review) are:
-
-- Lock screen: https://kommodo.ai/i/NnBDGbBZOQFgjNTxorNp
-- Home screen: https://kommodo.ai/i/dJYn2pU20WYmcV8ctZbH
-- Baby: https://kommodo.ai/i/Qusd5LpNRXxpzalaLdIC
-
-No other person's profile photos are included until the author supplies them. All photos added here will appear for every visitor after deployment.
+Both files are stored locally in the project, not hotlinked from Kommodo. Avoid deleting them during deployment.
