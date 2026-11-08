@@ -149,14 +149,34 @@ function CameraApp({savePhoto}: {savePhoto:(src:string)=>void}) {
   const capture=()=>{const video=videoRef.current;if(status!=='live'||!video||!video.videoWidth)return;const canvas=document.createElement('canvas');const scale=Math.min(1,1200/video.videoWidth);canvas.width=video.videoWidth*scale;canvas.height=video.videoHeight*scale;canvas.getContext('2d')?.drawImage(video,0,0,canvas.width,canvas.height);const src=canvas.toDataURL('image/jpeg',.76);savePhoto(src);setLastPhoto(src)}
   return <div className="app-page camera-app"><div className="camera-tools"><button onClick={()=>setFlash(f=>!f)} aria-label="Flash"><Flashlight size={22} color={flash?'#ffcf39':'white'}/></button><span>PHOTO</span><button aria-label="Camera options"><ChevronDown size={22}/></button></div><div className="viewfinder"><video ref={videoRef} autoPlay playsInline muted style={{display:status==='live'?'block':'none'}}/>{status!=='live'&&<div className="camera-fallback"><CameraOff size={46}/><strong>{status==='loading'?'Opening camera…':'Camera unavailable'}</strong><span>Allow camera access in your browser. A secure HTTPS connection is required on most devices.</span></div>}{flash&&<span className="flash-pill">Flash On</span>}</div><div className="camera-mode">CINEMATIC &nbsp; VIDEO &nbsp; <strong>PHOTO</strong> &nbsp; PORTRAIT</div><div className="camera-controls"><div className="camera-preview">{lastPhoto&&<img src={lastPhoto} alt="Last captured"/>}</div><button className="shutter" onClick={capture} aria-label="Take photo" disabled={status!=='live'}><span/></button><button className="camera-flip" onClick={()=>setFacing(v=>v==='environment'?'user':'environment')} aria-label="Flip camera"><RotateCcw size={25}/></button></div></div>
 }
-function Notes({notes,setNotes}: {notes:Note[];setNotes:Local<Note[]>[1]}) {
+function Notes({notes}: {notes:Note[];setNotes:Local<Note[]>[1]}) {
   const [selected,setSelected]=useState<string|null>(null)
+  const [folders,setFolders]=useState(false)
   const [search,setSearch]=useState('')
-  const note=notes.find(n=>n.id===selected)
-  const create=()=>{const n:Note={id:uid(),title:'New Note',body:'',updated:Date.now()};setNotes(old=>[n,...old]);setSelected(n.id)}
-  const update=(body:string)=>setNotes(old=>old.map(n=>n.id===selected?{...n,title:body.split('\n')[0]?.trim()||'New Note',body,updated:Date.now()}:n))
-  if(note)return <div className="app-page notes-app"><div className="notes-edit-header"><button onClick={()=>setSelected(null)}><ChevronLeft size={24}/>Notes</button><button onClick={()=>setSelected(null)}>Done</button></div><div className="note-date">{new Date(note.updated).toLocaleString('en-US',{month:'long',day:'numeric',hour:'numeric',minute:'2-digit'})}</div><textarea className="note-editor" value={note.body} autoFocus placeholder="Start writing…" onChange={e=>update(e.target.value)}/><div className="notes-toolbar"><button onClick={()=>{setNotes(old=>old.filter(n=>n.id!==selected));setSelected(null)}} aria-label="Delete note"><Trash2 size={23}/></button><button onClick={()=>document.execCommand('bold')} aria-label="Format text"><span className="aa">Aa</span></button><button onClick={create} aria-label="New note"><SquarePen size={23}/></button></div></div>
-  return <div className="app-page notes-app"><div className="notes-nav"><button onClick={()=>{}}>Folders</button><button onClick={create}><SquarePen size={23}/></button></div><h1>Notes</h1><div className="search-input"><Search size={18}/><input placeholder="Search" value={search} onChange={e=>setSearch(e.target.value)}/></div><div className="notes-list scroll-area">{notes.filter(n=>n.title.toLowerCase().includes(search.toLowerCase())||n.body.toLowerCase().includes(search.toLowerCase())).sort((a,b)=>b.updated-a.updated).map(n=><button key={n.id} className="note-item" onClick={()=>setSelected(n.id)}><strong>{n.title}</strong><span>{new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'})} <em>{n.body.split('\n').slice(1).join(' ').trim().slice(0,58)||'No additional text'}</em></span></button>)}</div><div className="notes-bottom"><span>{notes.length} Notes</span><button onClick={create} aria-label="Create note"><SquarePen size={23}/></button></div></div>
+  const all=Array.isArray(notes)?notes:defaultNotes
+  const items=all.filter(n=>(n.title+' '+n.body).toLowerCase().includes(search.toLowerCase())).sort((a,b)=>b.updated-a.updated)
+  const active=all.find(n=>n.id===selected)
+  if(active)return <div className="app-page ios5-notes ios5-note-open">
+    <div className="ios5-notes-nav"><button onClick={()=>setSelected(null)}><ChevronLeft size={23}/>Notes</button><span/></div>
+    <div className="ios5-note-reading scroll-area">
+      <div className="ios5-note-date">{new Date(active.updated).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+      <h1>{active.title}</h1>
+      {active.body.split('\n').filter((s,i)=>s.trim() && !(i===0&&s.trim()===active.title)).map((line,i)=><p key={i}>{line}</p>)}
+    </div>
+    <div className="ios5-notes-footer"><span>{all.length} Notes</span><span className="ios5-readonly-mark"><LockKeyhole size={14}/> Read Only</span></div>
+  </div>
+  if(folders)return <div className="app-page ios5-notes">
+    <div className="ios5-notes-nav"><button onClick={()=>setFolders(false)}>Back</button></div>
+    <h1>Folders</h1><div className="ios5-folder-label">ON MY IPHONE</div>
+    <button className="ios5-folder-row" onClick={()=>setFolders(false)}><Folder size={23} color="#dfaa20" fill="#dfaa20"/><span>Notes</span><small>{all.length}</small><ChevronRight size={18}/></button>
+  </div>
+  return <div className="app-page ios5-notes">
+    <div className="ios5-notes-nav"><button onClick={()=>setFolders(true)}><ChevronLeft size={23}/>Folders</button><span className="ios5-notes-lock"><LockKeyhole size={17}/></span></div>
+    <h1>Notes</h1>
+    <label className="ios5-notes-search"><Search size={18}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search" aria-label="Search Notes"/></label>
+    <div className="ios5-note-list scroll-area">{items.map(n=><button key={n.id} onClick={()=>setSelected(n.id)} className="ios5-note-row"><strong>{n.title}</strong><span><time>{new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</time> {n.body.split('\n').slice(1).join(' ').slice(0,90)||'No additional text'}</span></button>)}{!items.length&&<div className="ios5-no-results">No Notes Found</div>}</div>
+    <div className="ios5-notes-footer"><span>{all.length} Notes</span><span className="ios5-readonly-mark"><LockKeyhole size={14}/> Read Only</span></div>
+  </div>
 }
 function CalendarApp({events,setEvents}: {events:CalEvent[];setEvents:Local<CalEvent[]>[1]}){
   const now=new Date(),[month,setMonth]=useState(new Date(now.getFullYear(),now.getMonth(),1)),[day,setDay]=useState(dateISO(now)),[add,setAdd]=useState(false),[title,setTitle]=useState(''),[time,setTime]=useState('10:00')
