@@ -17,7 +17,7 @@ export const contacts: Contact[] = [
   { id: 'gale', name: 'Gale', fullName: 'Gale', initials: 'G', color: '#adc8d3', number: '+63 900 000 0007' },
 ]
 const m = (id: string, from: 'me' | 'them', text: string, time: string): ChatMessage => ({ id, from, text, time })
-// All sample fictional messages are editable placeholders for the author's canonical story.
+// Message histories belong to Ayira's story; interactions are local to the visitor.
 export const seedChats: Record<string, ChatMessage[]> = {
   baby: [
     m('b1','them','Have you eaten yet?','9:36 AM'),
@@ -38,7 +38,7 @@ export const seedChats: Record<string, ChatMessage[]> = {
 }
 export const defaultNotes: Note[] = [
   { id: 'n1', title: 'Things to remember', body: 'Things to remember\n\n• Charge my phone\n• Reply to the group chat\n• Don’t forget the little things', updated: Date.now()-86400000 },
-  { id: 'n2', title: 'Unsent words', body: 'Unsent words\n\nSome thoughts are easier to write than to say.\n\n[Replace this with Ayira’s story.]', updated: Date.now()-172800000 },
+  { id: 'n2', title: 'Unsent words', body: 'Unsent words\n\nSome thoughts are easier to write than to say.', updated: Date.now()-172800000 },
   { id: 'n3', title: 'Little reminders', body: 'Little reminders\n\nThere are still so many good days ahead.', updated: Date.now()-259200000 },
 ]
 export const defaultReminders: Reminder[] = [
