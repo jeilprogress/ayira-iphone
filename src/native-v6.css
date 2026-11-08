@@ -1,0 +1,157 @@
+/* Ayira Ross iPhone: immersive story UI, iOS 18-inspired, November 2026 revision. */
+/* Consolidates the lock/passcode presentation instead of layering extra overlays. */
+.ios-lock.ios6-lock{padding:0!important;cursor:default;isolation:isolate;background:#fff!important}
+.ios-lock.ios6-lock .story-wallpaper-image{object-position:50% 50%!important;filter:none}
+.ios-lock.ios6-lock .lock-center.ios6-lock-clock{position:absolute!important;z-index:3;top:68px;left:0;right:0;margin:0!important;display:flex;flex-direction:column;align-items:center;color:#10151e!important}
+.ios-lock.ios6-lock .ios6-lock-clock>svg{color:#121820!important;margin-bottom:16px}
+.ios-lock.ios6-lock .lock-date{margin:0!important;font-size:19px!important;font-weight:580!important;color:#17202c!important;letter-spacing:-.3px;text-shadow:none!important;line-height:1.35}
+.ios-lock.ios6-lock .lock-time{margin-top:-3px;font-size:clamp(72px,10vw,92px)!important;font-weight:300!important;letter-spacing:-5px!important;color:#141924!important;line-height:1.08!important;text-shadow:none!important;font-variant-numeric:tabular-nums}
+.ios-lock.ios6-lock .lock-notif.ios6-lock-notification{z-index:5!important;top:320px!important;left:15px!important;right:15px!important;border-radius:20px!important;padding:13px 14px 14px!important;background:rgba(247,248,251,.73)!important;border:1px solid rgba(255,255,255,.85)!important;box-shadow:0 7px 24px rgba(27,34,46,.09)!important;backdrop-filter:blur(18px) saturate(135%);color:#282a30!important;text-align:left}
+.ios-lock.ios6-lock .ios6-lock-notification .lock-notif-title{font-size:10px;color:#787980;font-weight:620;letter-spacing:.2px}
+.ios-lock.ios6-lock .ios6-lock-notification strong{margin-top:8px;font-size:14px;font-weight:660}
+.ios-lock.ios6-lock .ios6-lock-notification p{font-size:13px;line-height:1.35;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.ios-lock.ios6-lock .lock-tap-area{position:absolute!important;top:40%;bottom:94px;z-index:2;background:transparent}
+.ios-lock.ios6-lock .lock-bottom.ios6-lock-bottom{z-index:6;bottom:33px!important;left:23px!important;right:23px!important;align-items:center!important}
+.ios-lock.ios6-lock .ios6-lock-bottom>button:not(.lock-swipe-label){width:49px!important;height:49px!important;background:rgba(229,231,236,.73)!important;color:#222a33!important;border:1px solid rgba(255,255,255,.65)!important;backdrop-filter:blur(18px)!important;box-shadow:0 2px 8px #00000012}
+.ios-lock.ios6-lock .lock-swipe-label{color:#2b3038!important;text-shadow:none!important;opacity:.88;font-weight:530!important;letter-spacing:-.1px;font-size:12px!important;gap:0!important}
+.ios-lock.ios6-lock .lock-swipe-label svg{animation:ios6UnlockNudge 2.4s ease-in-out infinite}
+@keyframes ios6UnlockNudge{0%,100%{transform:translateY(0);opacity:.65}50%{transform:translateY(-5px);opacity:1}}
+.ios-lock.ios6-lock.passcode-active:before{background:transparent!important;backdrop-filter:none!important;filter:none!important}
+.iphone-glass:has(.ios6-lock.passcode-active)>.statusbar .status-time.light,.iphone-glass:has(.ios6-lock.passcode-active)>.statusbar .status-icons.light{color:#fff!important;text-shadow:0 1px 5px #0006!important}
+.ios-lock.ios6-lock .passcode-panel.ios6-passcode-panel{z-index:11!important;inset:0!important;padding:91px 25px 28px!important;position:absolute!important;background:linear-gradient(150deg,rgba(24,35,52,.61),rgba(24,33,49,.69))!important;backdrop-filter:blur(22px) saturate(85%)!important;animation:ios6PasscodeEnter .37s cubic-bezier(.22,.75,.25,1) both!important;display:flex;flex-direction:column;align-items:center;overflow-y:auto}
+@keyframes ios6PasscodeEnter{from{opacity:.35;transform:translateY(25px)}to{opacity:1;transform:translateY(0)}}
+.ios6-passcode-icon{height:32px;min-height:32px;display:flex;justify-content:center;align-items:center;color:#fff;margin:0 auto 25px}
+.ios-lock.ios6-lock .passcode-prompt.ios6-passcode-prompt{width:100%;min-height:126px!important;max-height:142px;justify-content:flex-start!important;gap:0!important;color:#fff}
+.ios-lock.ios6-lock .ios6-passcode-prompt h1{color:#fff!important;font-size:23px!important;font-weight:500!important;margin:0 0 24px!important;letter-spacing:-.5px!important}
+.ios-lock.ios6-lock .passcode-dots{display:flex;gap:21px!important;margin:0 0 10px!important}
+.ios-lock.ios6-lock .passcode-dots i{height:12px!important;width:12px!important;border:1.6px solid #fff!important;background:transparent}
+.ios-lock.ios6-lock .passcode-dots i.filled{background:#fff!important}
+.ios-lock.ios6-lock .passcode-error{min-height:18px;color:#ffe5e2;font-size:13px!important}
+.ios-lock.ios6-lock .ios6-lockout-time{font-size:17px!important;color:#fff!important;margin:0!important;font-weight:450!important}
+.ios-lock.ios6-lock .passcode-pad.ios6-passcode-pad{display:grid;grid-template-columns:repeat(3,1fr);align-items:center;justify-items:center;gap:14px 15px!important;margin:auto 0 0!important;max-width:308px!important;width:100%!important}
+.ios-lock.ios6-lock .ios6-passcode-pad .passcode-digit{height:77px!important;width:77px!important;background:rgba(255,255,255,.20)!important;color:#fff!important;border:1px solid rgba(255,255,255,.16)!important;backdrop-filter:blur(6px);box-shadow:inset 0 1px 2px rgba(255,255,255,.14);transition:background .16s,transform .13s!important}
+.ios-lock.ios6-lock .ios6-passcode-pad .passcode-digit:active{background:rgba(255,255,255,.49)!important;transform:scale(.94)}
+.ios-lock.ios6-lock .ios6-passcode-pad .passcode-digit span{font-size:31px!important;font-weight:350!important;line-height:1!important}
+.ios-lock.ios6-lock .ios6-passcode-pad .passcode-digit small{font-size:10px!important;letter-spacing:1.7px!important;font-weight:590!important;margin-top:5px}
+.ios-lock.ios6-lock .ios6-passcode-pad .passcode-delete{height:77px;width:77px;display:grid;place-items:center}
+.ios-lock.ios6-lock .passcode-cancel{color:#fff!important;font-size:15px!important;font-weight:510!important;align-self:flex-end!important;margin:10px 1px 0!important;padding:5px 11px!important}
+/* Notes: preserve native list/toolbar shape while keeping edit tools inert. */
+.story-notes-app{display:flex!important;flex-direction:column!important;background:#f2f2f7!important;overflow:hidden!important;min-height:0}
+.story-notes-app .notes-nav{margin-top:0!important;padding:66px 19px 6px!important;min-height:98px!important;display:flex;align-items:center;justify-content:space-between;flex:none}
+.story-notes-app .notes-nav button,.story-notes-app .notes-edit-header button{color:#d49e19!important;font-size:17px}
+.story-notes-app button:disabled{opacity:.44!important;cursor:default;pointer-events:none}
+.story-notes-app>h1{margin:4px 19px 14px!important;padding:0!important;font-size:35px!important}
+.story-notes-app>.search-input{height:37px!important;margin:0 17px 14px!important;background:#e3e3e8!important;display:flex;align-items:center;gap:7px;padding:0 11px!important;flex:none}
+.story-notes-app .search-input input{background:transparent;border:0;outline:0;flex:1;min-width:0;color:#242428}
+.story-notes-app .notes-list{flex:1;min-height:0!important;margin:0 15px 0!important;padding:0!important;overflow:auto!important;background:#fff!important;border-radius:13px!important}
+.story-notes-app .note-item{min-height:76px!important;padding:12px 15px!important;border-bottom:1px solid #e7e6ea!important;background:#fff;text-align:left;display:flex;flex-direction:column;gap:4px}
+.story-notes-app .note-item strong{font-size:16px;line-height:1.25;font-weight:675;color:#222}
+.story-notes-app .note-item span{display:block;font-size:13px;color:#81818a;line-height:1.3;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;width:100%}
+.story-notes-app .note-item em{font-size:13px;font-style:normal;color:#a1a1a7}
+.story-notes-app .notes-bottom{background:rgba(249,249,250,.96);border-top:1px solid #dddde1;display:flex;justify-content:center;align-items:center;min-height:65px;flex:none;position:relative}
+.story-notes-app .notes-bottom>span{font-size:13px;color:#89898f}
+.story-notes-app .notes-bottom>button{position:absolute;right:20px;color:#d49e19}
+.story-notes-app .notes-edit-header{margin:0!important;padding:67px 17px 10px!important;min-height:104px!important;display:flex;justify-content:space-between;align-items:center;flex:none;background:#fbfbfd}
+.story-notes-app .note-reading{background:#fff;flex:1;min-height:0;overflow-y:auto;padding:12px 20px 25px}
+.story-notes-app .note-date{text-align:center;color:#aaaab0;font-size:12px;margin-bottom:18px}
+.story-notes-app .note-reading h2{font-size:29px;font-weight:730;letter-spacing:-.8px;margin-bottom:13px;color:#19191d}
+.story-notes-app .note-reading p{font-size:16px;line-height:1.47;white-space:pre-wrap;color:#222227;margin:0 0 13px}
+.story-notes-app .notes-toolbar.story-notes-toolbar{background:#fafafd;min-height:64px;display:flex;align-items:center;justify-content:space-around;border-top:1px solid #e6e6ea;padding:9px 15px 14px;flex:none;color:#d7a322}
+.story-notes-app .notes-toolbar span:not(.aa){color:#91919a;font-size:12px}
+.story-notes-app .notes-toolbar button{min-width:40px;display:grid;place-items:center}
+/* Calendar story milestone */
+.story-calendar .story-calendar-add{display:grid;place-items:center;color:#d3d3d8;opacity:.6!important;pointer-events:none}
+.story-calendar .story-calendar-note{font-size:14px;line-height:1.5;color:#42424a;margin:10px 0 1px;white-space:normal}
+.story-calendar .event-row{align-items:flex-start!important;padding:16px 13px!important;min-height:89px}
+.story-calendar .event-row>div{display:flex;flex-direction:column;gap:3px}
+.story-calendar .calendar-grid button.has-story-date i{background:#e34e43!important;opacity:1}
+/* Safari Start Page, faux browsing history sheet and familiar bottom browser chrome */
+.ios6-safari{position:relative;display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:68px 0 0!important;background:linear-gradient(155deg,#e4edf5 0%,#f6f7f9 63%,#eef1f5)!important;color:#191a20}
+.ios6-safari .ios6-safari-page{flex:1;min-height:0;overflow-y:auto;padding:0 18px 18px}
+.ios6-safari-start h1{font-size:34px!important;font-weight:730;letter-spacing:-1.2px;margin:12px 0 31px!important}
+.ios6-safari-start h2{font-size:19px!important;font-weight:700;letter-spacing:-.4px;margin:0 0 14px}
+.ios6-safari-favorites{display:grid;grid-template-columns:repeat(4,1fr);gap:13px 8px;margin-bottom:32px}
+.ios6-safari-favorites button{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
+.ios6-safari-favorites button span{display:grid;place-items:center;background:#fff;color:#4383ec;font-weight:770;font-size:26px;width:57px;height:57px;border-radius:14px;box-shadow:0 4px 11px #1c30451c}
+.ios6-safari-favorites button:nth-child(2) span{color:#45a37e}
+.ios6-safari-favorites button:nth-child(3) span{color:#383c43}
+.ios6-safari-favorites button:nth-child(4) span{color:#ffac54}
+.ios6-safari-favorites button small{font-size:12px;color:#4e5360;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.ios6-safari-recent{background:rgba(255,255,255,.82);border-radius:15px;overflow:hidden;box-shadow:0 6px 20px rgba(38,51,69,.055)}
+.ios6-safari-recent button{display:flex;align-items:center;gap:11px;text-align:left;width:100%;padding:15px 12px;border-bottom:1px solid #e8e9ec}
+.ios6-safari-recent button:last-child{border-bottom:0}
+.ios6-safari-recent button>span{color:#78828f}
+.ios6-safari-recent button strong{font-size:14px;color:#202833;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:550}
+.ios6-safari-recent button>svg{color:#bdc1c8;flex:none}
+.ios6-safari-bottom{flex:none;padding:10px 14px 24px;background:rgba(242,243,247,.95);backdrop-filter:blur(18px);border-top:1px solid #dfe1e7}
+.ios6-safari-address{display:flex;align-items:center;gap:9px;background:#e5e6eb;padding:10px 12px;border-radius:13px;width:100%;color:#6b717d;min-width:0}
+.ios6-safari-address span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;font-weight:470;color:#444a53}
+.ios6-safari-controls{display:flex;justify-content:space-between;align-items:center;padding:13px 13px 0;color:#1779ed}
+.ios6-safari-controls button:disabled{color:#bfc3cb;pointer-events:none}
+.ios6-safari-google{background:#fff;border-radius:15px 15px 0 0;margin:-4px -18px -18px;min-height:100%;padding:24px 16px;color:#222}
+.ios6-google-logo{display:flex;justify-content:center;margin:7px 0 23px;font-size:38px;letter-spacing:-3px;font-weight:600}
+.ios6-google-logo span:nth-child(6n+1),.ios6-google-logo span:nth-child(6n+4){color:#4285f4}
+.ios6-google-logo span:nth-child(2),.ios6-google-logo span:nth-child(6){color:#ea4335}
+.ios6-google-logo span:nth-child(3){color:#fbbc05}
+.ios6-google-logo span:nth-child(5){color:#34a853}
+.ios6-google-query{display:flex;align-items:center;gap:9px;padding:12px 10px;background:#f5f6f8;border:1px solid #dedfe4;border-radius:25px;margin:0 0 16px;color:#8d939b}
+.ios6-google-query>span{flex:1;min-width:0;color:#32363b;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ios6-safari-google nav{display:flex;gap:22px;padding:0 12px 9px;border-bottom:1px solid #e6e8ed;color:#767e8c;font-size:13px}
+.ios6-safari-google nav span.selected{color:#1a73e8;border-bottom:2px solid #1a73e8;padding-bottom:8px;margin-bottom:-10px}
+.ios6-google-results{padding:10px 6px}
+.ios6-google-result{border-bottom:1px solid #e9e9ed;padding:16px 0 17px}
+.ios6-google-result small{font-size:12px;color:#5f6877}
+.ios6-google-result h3{font-size:17px;font-weight:500;color:#2359ba;margin:6px 0}
+.ios6-google-result p{font-size:13px;color:#454952;line-height:1.4}
+.ios6-safari-history-shade{position:absolute;inset:0;z-index:55;background:rgba(15,24,37,.34);animation:ios6Shade .22s ease-out}
+.ios6-safari-history{position:absolute;inset:77px 0 0;background:#f8f8fb;border-radius:22px 22px 0 0;box-shadow:0 -7px 25px rgba(24,37,54,.13);display:flex;flex-direction:column;overflow:hidden;animation:ios6HistoryEnter .3s cubic-bezier(.2,.8,.3,1)}
+.ios6-safari-history-header{padding:18px 17px 13px;text-align:center;position:relative;background:#fff;border-bottom:1px solid #e7e7eb}
+.ios6-safari-history-header strong{font-size:17px;font-weight:660}
+.ios6-safari-history-header button{position:absolute;right:19px;top:17px;color:#007aff;font-weight:590;font-size:16px}
+.ios6-safari-history-label{font-size:12px;color:#888b94;padding:18px 18px 8px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.ios6-safari-history-list{overflow-y:auto;background:#fff;margin:0 13px;border-radius:13px}
+.ios6-safari-history-list button{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:15px 12px;border-bottom:1px solid #efeff2;color:#7b8491}
+.ios6-safari-history-list button:last-child{border-bottom:0}
+.ios6-safari-history-list button span{flex:1;min-width:0;color:#222831;font-size:15px;line-height:1.32;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ios6-safari-history-list button>svg:last-child{flex:none;color:#c6c8cd}
+@keyframes ios6Shade{from{opacity:0}to{opacity:1}}
+@keyframes ios6HistoryEnter{from{transform:translateY(44px);opacity:.6}to{transform:translateY(0);opacity:1}}
+/* Author-chosen sunny weather, intentionally static. */
+.ios6-weather{background:linear-gradient(180deg,#3e8ee1 0%,#70b3e9 58%,#98cbec 100%)!important;color:#fff!important;overflow-y:auto;padding:83px 15px 38px!important}
+.ios6-weather-hero{text-align:center;margin-bottom:45px;text-shadow:0 2px 6px #2865a233}
+.ios6-weather-hero>span{display:block;font-size:27px;font-weight:460;letter-spacing:-.6px}
+.ios6-weather-hero strong{font-size:92px;font-weight:230;line-height:1.1;display:block;letter-spacing:-6px}
+.ios6-weather-hero p{font-size:20px;font-weight:520;margin:6px 0}
+.ios6-weather-hero small{font-size:16px}
+.ios6-weather-card{background:rgba(66,134,193,.30);border:1px solid rgba(255,255,255,.19);backdrop-filter:blur(13px);border-radius:17px;padding:15px 13px;margin:0 0 16px}
+.ios6-weather-card h3{font-size:15px;font-weight:550;padding:0 2px 12px;border-bottom:1px solid rgba(255,255,255,.23);margin-bottom:12px}
+.ios6-hourly{display:flex;gap:10px;overflow-x:auto}
+.ios6-hourly>div{display:flex;flex-direction:column;align-items:center;gap:13px;min-width:52px}
+.ios6-hourly span{font-size:12px}
+.ios6-hourly strong{font-size:17px}
+.ios6-forecast-row{display:flex;align-items:center;gap:11px;padding:12px 3px;border-bottom:1px solid rgba(255,255,255,.17)}
+.ios6-forecast-row:last-child{border-bottom:0}
+.ios6-forecast-row strong{font-weight:570;min-width:42px}
+.ios6-forecast-row span{font-size:21px}
+.ios6-forecast-row small{font-size:15px}
+.ios6-forecast-row i{height:5px;border-radius:5px;flex:1;background:linear-gradient(90deg,#8bd6c1,#ffe77f,#ffa34d)}
+.ios6-forecast-row b{font-size:15px;font-weight:570}
+.ios6-weather-squares{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.ios6-weather-squares>div{background:rgba(66,134,193,.30);border:1px solid rgba(255,255,255,.19);border-radius:16px;padding:17px;display:flex;flex-direction:column;gap:8px}
+.ios6-weather-squares small{font-size:11px;letter-spacing:.6px;opacity:.8}
+.ios6-weather-squares strong{font-size:37px;font-weight:350}
+.ios6-weather-squares span{font-size:13px}
+@media(max-height:740px){
+  .ios-lock.ios6-lock .lock-notif.ios6-lock-notification{top:290px!important}
+  .ios-lock.ios6-lock .ios6-passcode-pad .passcode-digit{width:67px!important;height:67px!important}
+  .ios-lock.ios6-lock .passcode-panel.ios6-passcode-panel{padding-top:70px!important;padding-bottom:19px!important}
+  .ios-lock.ios6-lock .passcode-pad.ios6-passcode-pad{gap:9px!important}
+}
+@media(max-width:370px){
+  .ios-lock.ios6-lock .lock-time{font-size:74px!important}
+  .ios6-safari-favorites button span{width:51px;height:51px}
+}
+@media(prefers-reduced-motion:reduce){
+  .ios-lock.ios6-lock .lock-swipe-label svg{animation:none}
+  .ios-lock.ios6-lock .passcode-panel.ios6-passcode-panel,.ios6-safari-history-shade,.ios6-safari-history{animation:none!important}
+}
