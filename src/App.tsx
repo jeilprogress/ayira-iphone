@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef, useCallback, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react'
+import { useState, useEffect, useRef, useCallback, Component, type ErrorInfo, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react'
+import IosIcon from './IosIcon'
+import LockScreen from './LockScreen'
 import { MessageCircle, Phone, Images, Camera, NotebookPen, CalendarDays, Settings, Clock3, Calculator, Compass, ContactRound, ListTodo, Music2, CloudSun, Folder, MapPinned, Mail, Wifi, BatteryFull, Signal, ChevronLeft, ChevronRight, Search, Plus, MoreHorizontal, Video, Mic, PhoneCall, Star, Delete, X, Volume2, VolumeX, Sun, Bluetooth, Plane, Moon, Flashlight, Timer, LockKeyhole, CircleUserRound, Info, Share2, Heart, Trash2, Check, Play, Pause, RotateCcw, Globe, ArrowUpRight, Grid2X2, SquarePen, Bell, BellOff, CheckCircle2, AlarmClock, ChevronDown, Image as ImageIcon, Navigation, Copy, CameraOff, ExternalLink, SlidersHorizontal, type LucideIcon } from 'lucide-react'
 import { contacts, seedChats, defaultNotes, defaultReminders, uid, clockTime, shortTime, dateLabel, dateISO, scriptedReply, type AppId, type Screen, type ChatMessage, type Contact, type Note, type CalEvent, type Reminder, type SavedPhoto } from './data'
 
 type Local<T> = [T, (value: T | ((old: T) => T)) => void]
 function useLocal<T>(key: string, initial: T): Local<T> {
   const [value, setValue] = useState<T>(() => {
-    try { const raw = localStorage.getItem(`ayira-phone-v1:${key}`); return raw ? JSON.parse(raw) as T : initial } catch { return initial }
+    try { const raw = localStorage.getItem(`ayira-phone-v1:${key}`); return raw ? (key === 'chats' ? normalizeChats(JSON.parse(raw)) as unknown as T : JSON.parse(raw) as T) : initial } catch { return initial }
   })
   useEffect(() => { try { localStorage.setItem(`ayira-phone-v1:${key}`, JSON.stringify(value)) } catch { /* storage unavailable */ } }, [key, value])
   return [value, setValue]
@@ -30,6 +32,25 @@ const appList: {id: AppId; title: string; icon: LucideIcon; color: string; text?
   { id: 'phone', title: 'Phone', icon: Phone, color: 'linear-gradient(135deg,#72e875,#16c139)' },
 ]
 const appInfo = Object.fromEntries(appList.map(a => [a.id, a])) as Record<AppId, typeof appList[number]>
+function normalizeChats(raw: unknown): Record<string, ChatMessage[]> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return structuredClone(seedChats)
+  const result: Record<string, ChatMessage[]> = {}
+  for (const person of contacts) {
+    const entries = (raw as Record<string, unknown>)[person.id]
+    result[person.id] = Array.isArray(entries)
+      ? entries.filter((m): m is ChatMessage => !!m && typeof m === 'object' && typeof m.text === 'string' && (m.from === 'me' || m.from === 'them')).map(m => ({id:String(m.id||uid()),from:m.from,text:m.text,time:String(m.time||shortTime())}))
+      : [...(seedChats[person.id]||[])]
+  }
+  return result
+}
+function ScreenRenderer({render}:{render:()=>ReactNode}) {return <>{render()}</>}
+class AppFailureBoundary extends Component<{children:ReactNode},{broken:boolean}> {
+  state={broken:false}
+  static getDerivedStateFromError(){return {broken:true}}
+  componentDidCatch(error: Error, info: ErrorInfo){console.error('Ayira iPhone screen error:',error,info)}
+  render(){return this.state.broken ? <div className="app-recovery"><h2>Couldn't open this screen</h2><p>Your messages and notes are still saved. Try returning to the Home Screen.</p><button onClick={()=>{this.setState({broken:false});window.dispatchEvent(new Event('ayira:home'))}}>Go Home</button></div> : this.props.children}
+}
+
 let audioCtx: AudioContext | null = null
 function tone(type: 'tap' | 'send' | 'receive' | 'lock') {
   try {
@@ -69,26 +90,26 @@ function Messages({chats,setChats,play,onContact,initialSelected=null}: {chats:R
   const [showDetails,setShowDetails] = useState(false)
   const [unread,setUnread] = useLocal<string[]>('unread', [])
   const end = useRef<HTMLDivElement>(null)
-  useEffect(() => end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), [selected, chats, typing])
+  useEffect(() => { const scrollPane=end.current?.closest('.thread-messages'); if(scrollPane)scrollPane.scrollTop=scrollPane.scrollHeight }, [selected, chats, typing])
   const openChat = (id:string) => {play('tap');setSelected(id);setDraft('');setCompose(false);setUnread(old=>old.filter(x=>x!==id))}
   const sendMessage=()=>{
-    const value=draft.trim();if(!value||!selected)return
+    const value=draft.trim();if(!value||!selected||value.length>2500)return
     play('send');setDraft('');const now=shortTime()
-    setChats(old=>({...old,[selected]:[...(old[selected]||[]),{id:uid(),from:'me',text:value,time:now}]}))
+    setChats(old=>{const safe=normalizeChats(old);return {...safe,[selected]:[...(safe[selected]||[]),{id:uid(),from:'me',text:value,time:now}]}})
     if(selected==='baby') {
       setTyping('baby')
       const reply=scriptedReply(value,(chats.baby||[]).length)
-      window.setTimeout(()=>{setChats(old=>({...old,baby:[...(old.baby||[]),{id:uid(),from:'them',text:reply,time:shortTime()}]}));setTyping(old=>old==='baby'?null:old);play('receive')},1250+Math.min(1800,value.length*27))
+      window.setTimeout(()=>{setChats(old=>{const safe=normalizeChats(old);return {...safe,baby:[...(safe.baby||[]),{id:uid(),from:'them',text:reply,time:shortTime()}]}});setTyping(old=>old==='baby'?null:old);play('receive')},1250+Math.min(1800,value.length*27))
     }
   }
-  if(selected){const p=contacts.find(x=>x.id===selected)!,items=chats[selected]||[];return <div className="messages-thread app-page">
+  if(selected){const p=contacts.find(x=>x.id===selected) || contacts[0],items=Array.isArray(chats[selected])?chats[selected]:[];return <div className="messages-thread app-page">
     <div className="thread-header"><button onClick={()=>{setSelected(null);setShowDetails(false)}} className="thread-back"><ChevronLeft size={28}/><span className="thread-count">{contacts.length}</span></button><button className="thread-person" onClick={()=>setShowDetails(true)}><Avatar person={p} size={37}/><span>{p.name} <ChevronRight size={12}/></span></button><button className="thread-video" onClick={()=>setShowDetails(true)} aria-label="Contact information"><Video size={24}/></button></div>
-    <div className="thread-messages scroll-area" aria-label={`Conversation with ${p.name}`}><div className="chat-date-separator">Today <span>9:36 AM</span></div>{items.map((it,idx)=><div className={`message-row ${it.from==='me'?'sent':'received'}`} key={it.id}>{it.from==='them' && idx>0 && items[idx-1].from==='me' ? <span className="bubble-space"/>:null}<div className="message-bubble">{it.text}</div></div>)}{typing===selected&&<div className="message-row received"><div className="message-bubble typing-dots"><span/><span/><span/></div></div>}<div className="message-delivered">{items[items.length-1]?.from==='me'?'Delivered':''}</div><div ref={end}/></div>
-    <div className="composer-wrap"><button className="circle-plus" onClick={()=>setShowDetails(true)} aria-label="More options"><Plus size={22}/></button><div className="composer"><input value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();sendMessage()}}} placeholder="iMessage" aria-label="Type a message"/><button className={draft.trim()?'send-active':'send-inactive'} onClick={sendMessage} aria-label="Send message"><ArrowUpRightIcon/></button></div><button className="composer-mic" onClick={()=>setShowDetails(true)} aria-label="Audio messaging"><Mic size={21}/></button></div>
+    <div className="thread-messages scroll-area" aria-label={`Conversation with ${p.name}`}><div className="chat-date-separator">iMessage <span>· End-to-end encrypted</span></div>{items.map((it,idx)=><div className={`message-row ${it.from==='me'?'sent':'received'}`} key={it.id}>{it.from==='them' && idx>0 && items[idx-1].from==='me' ? <span className="bubble-space"/>:null}<div className="message-bubble">{it.text}</div></div>)}{typing===selected&&<div className="message-row received"><div className="message-bubble typing-dots"><span/><span/><span/></div></div>}<div className="message-delivered">{typing===selected?'':items[items.length-1]?.from==='me'?'Delivered':''}</div><div ref={end}/></div>
+    <div className="composer-wrap"><button className="circle-plus" onClick={()=>setShowDetails(true)} aria-label="More options"><Plus size={22}/></button><div className="composer"><input value={draft} maxLength={2500} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();sendMessage()}}} placeholder="iMessage" aria-label="Type a message"/><button className={draft.trim()?'send-active':'send-inactive'} onClick={sendMessage} aria-label="Send message"><ArrowUpRightIcon/></button></div><button className="composer-mic" onClick={()=>setShowDetails(true)} aria-label="Audio messaging"><Mic size={21}/></button></div>
     {showDetails&&<div className="modal-shade" onClick={()=>setShowDetails(false)}><div className="contact-sheet" onClick={e=>e.stopPropagation()}><div className="sheet-grabber"/><button className="sheet-close" onClick={()=>setShowDetails(false)}><X size={18}/></button><Avatar person={p} size={76}/><h2>{p.name}</h2><p>{p.fullName}</p><div className="sheet-actions"><button onClick={()=>{setShowDetails(false);onContact(p.id)}}><Info size={22}/>info</button><button onClick={()=>setShowDetails(false)}><Phone size={22}/>audio</button><button onClick={()=>setShowDetails(false)}><Video size={22}/>video</button></div><p className="sheet-note">Photo and contact details can be personalized later.</p></div></div>}
   </div>}
-  const sorted=contacts.filter(c=>(filter==='all'||unread.includes(c.id)) && (`${c.name} ${c.fullName} ${chats[c.id]?.at(-1)?.text||''}`).toLowerCase().includes(search.toLowerCase())).sort((a,b)=> {const la=chats[a.id]?.at(-1)?.id||'', lb=chats[b.id]?.at(-1)?.id||'';if(la.includes('-')!==lb.includes('-'))return la.includes('-')?-1:1;return contacts.indexOf(a)-contacts.indexOf(b)})
-  return <div className="app-page messages-list scroll-area"><div className="messages-nav"><button onClick={()=>setUnread(contacts.map(c=>c.id))}>Edit</button><button className="compose-btn" onClick={()=>setCompose(true)} aria-label="New message"><SquarePen size={23}/></button></div><h1>Messages</h1><div className="search-input"><Search size={18}/><input placeholder="Search" aria-label="Search messages" value={search} onChange={e=>setSearch(e.target.value)}/><Mic size={18}/></div><div className="segmented"><button className={filter==='all'?'active':''} onClick={()=>setFilter('all')}>All</button><button className={filter==='unread'?'active':''} onClick={()=>setFilter('unread')}>Unread</button></div><div className="thread-list">{sorted.map(c=>{const last=chats[c.id]?.at(-1);return <button className="thread-list-item" key={c.id} onClick={()=>openChat(c.id)}><Avatar person={c} size={55}/><div className="thread-preview"><div className="thread-preview-top"><strong>{c.name}</strong><span>{last?.id.includes('-')?'now':last?.time||'Yesterday'} <ChevronRight size={14}/></span></div><div className="preview-text">{last?.from==='me'?'You: ':''}{last?.text||'Start a conversation'}</div></div>{unread.includes(c.id)&&<span className="unread-indicator"/>}</button>})}</div>{!sorted.length&&<Placeholder icon={MessageCircle} title="No conversations" description="Try another search or check All messages."/>}<div className="list-bottom-space"/>
+  const sorted=contacts.filter(c=>(filter==='all'||unread.includes(c.id)) && (`${c.name} ${c.fullName} ${(Array.isArray(chats[c.id]) ? chats[c.id] : [])?.at(-1)?.text||''}`).toLowerCase().includes(search.toLowerCase())).sort((a,b)=> {const la=chats[a.id]?.at(-1)?.id||'', lb=chats[b.id]?.at(-1)?.id||'';if(la.includes('-')!==lb.includes('-'))return la.includes('-')?-1:1;return contacts.indexOf(a)-contacts.indexOf(b)})
+  return <div className="app-page messages-list scroll-area"><div className="messages-nav"><button onClick={()=>setUnread(contacts.map(c=>c.id))}>Edit</button><button className="compose-btn" onClick={()=>setCompose(true)} aria-label="New message"><SquarePen size={23}/></button></div><h1>Messages</h1><div className="search-input"><Search size={18}/><input placeholder="Search" aria-label="Search messages" value={search} onChange={e=>setSearch(e.target.value)}/><Mic size={18}/></div><div className="segmented"><button className={filter==='all'?'active':''} onClick={()=>setFilter('all')}>All</button><button className={filter==='unread'?'active':''} onClick={()=>setFilter('unread')}>Unread</button></div><div className="thread-list">{sorted.map(c=>{const last=(Array.isArray(chats[c.id]) ? chats[c.id] : [])?.at(-1);return <button className="thread-list-item" key={c.id} onClick={()=>openChat(c.id)}><Avatar person={c} size={55}/><div className="thread-preview"><div className="thread-preview-top"><strong>{c.name}</strong><span>{last?.id.includes('-')?'now':last?.time||'Yesterday'} <ChevronRight size={14}/></span></div><div className="preview-text">{last?.from==='me'?'You: ':''}{last?.text||'Start a conversation'}</div></div>{unread.includes(c.id)&&<span className="unread-indicator"/>}</button>})}</div>{!sorted.length&&<Placeholder icon={MessageCircle} title="No conversations" description="Try another search or check All messages."/>}<div className="list-bottom-space"/>
     {compose&&<div className="modal-shade" onClick={()=>setCompose(false)}><div className="compose-sheet" onClick={e=>e.stopPropagation()}><div className="sheet-grabber"/><div className="compose-title"><button onClick={()=>setCompose(false)}>Cancel</button><strong>New Message</strong><span/></div><p>To: <span>Select a contact</span></p>{contacts.map(c=><button className="contact-pick" key={c.id} onClick={()=>openChat(c.id)}><Avatar person={c} size={36}/><span>{c.name}</span><ChevronRight size={18}/></button>)}</div></div>}
   </div>
 }
@@ -185,34 +206,37 @@ function ControlCenter({onClose,sound,setSound,brightness,setBrightness,lock}: {
 }
 function Notifications({close,openMessages}:{close:()=>void;openMessages:()=>void}){return <div className="notification-layer" onClick={close}><div className="notification-panel" onClick={e=>e.stopPropagation()}><button onClick={close}><X size={20}/></button><span>{dateLabel()}</span><h2>Notification Center</h2><button className="notification-item" onClick={()=>{close();openMessages()}}><span className="notif-icon"><MessageCircle size={20}/></span><div><strong>Messages</strong><p>Baby: Text me when you’re free, okay? 🤍</p></div><small>now</small></button><p className="notif-helper">Story notifications will appear here.</p></div></div>}
 function Spotlight({close,open}:{close:()=>void;open:(a:AppId)=>void}){const [q,setQ]=useState('');return <div className="spotlight-layer"><div className="spotlight-search"><Search size={20}/><input placeholder="Search" autoFocus value={q} onChange={e=>setQ(e.target.value)}/><button onClick={close}>Cancel</button></div><div className="spotlight-results">{appList.filter(a=>a.title.toLowerCase().includes(q.toLowerCase())).slice(0,8).map(a=><button key={a.id} onClick={()=>{close();open(a.id)}}><AppIcon app={a}/><span>{a.title}</span></button>)}</div><div className="spotlight-hint">Search Ayira’s apps</div></div>}
-function AppIcon({app}:{app:typeof appList[number]}){const Icon=app.icon;return <div className={`app-icon app-icon-${app.id}`} style={{background:app.color,color:app.text||'white'}}>{app.id==='calendar'?<><div className="calendar-icon-day">SUN</div><div className="calendar-icon-num">{new Date().getDate()}</div></>:<Icon size={32} strokeWidth={app.id==='settings'?2.6:2.15}/>}</div>}
+function AppIcon({app}:{app:typeof appList[number]}){return <div className={`app-icon app-icon-${app.id}`}><IosIcon id={app.id}/></div>}
 function Home({open,wall,doSpotlight}:{open:(id:AppId)=>void;wall:number;doSpotlight:()=>void}){
   const primary=appList.slice(0,16),dock=['phone','safari','messages','music'] as AppId[]
   return <div className={`home-screen wallpaper-${wall}`}><div className="home-scroll"><div className="home-widgets"><div className="weather-widget" onClick={()=>open('weather')} role="button"><CloudSun size={24} fill="#fff2b9"/><span>Manila</span><b>--°</b><small>Weather unavailable</small></div><div className="calendar-widget" onClick={()=>open('calendar')} role="button"><small>{new Date().toLocaleDateString('en-US',{weekday:'long'}).toUpperCase()}</small><b>{new Date().getDate()}</b><span>No events today</span></div></div><div className="home-grid">{primary.map(a=><button className="home-app" key={a.id} onClick={()=>open(a.id)}><AppIcon app={a}/><span>{a.title}</span></button>)}</div><div className="home-search-pill" role="button" onClick={doSpotlight}><Search size={13}/> Search</div></div><div className="dock">{dock.map(id=><button key={id} onClick={()=>open(id)} aria-label={appInfo[id].title}><AppIcon app={appInfo[id]}/></button>)}</div></div>
 }
-function LockScreen({unlock,wall,sound}:{unlock:()=>void;wall:number;sound:boolean}){
-  const [now,setNow]=useState(new Date());useEffect(()=>{const id=window.setInterval(()=>setNow(new Date()),15000);return()=>clearInterval(id)},[])
-  const time=now.toLocaleTimeString('en-US',{timeZone:'Asia/Manila',hour:'numeric',minute:'2-digit',hour12:false})
-  return <div className={`lock-screen wallpaper-${wall}`} onClick={unlock} role="button" tabIndex={0} onKeyDown={e=>e.key==='Enter'&&unlock()}><div className="lock-center"><LockKeyhole size={16} fill="rgba(255,255,255,.85)"/><div className="lock-date">{now.toLocaleDateString('en-US',{timeZone:'Asia/Manila',weekday:'long',month:'long',day:'numeric'})}</div><div className="lock-time">{time}</div></div><div className="lock-notif" onClick={e=>{e.stopPropagation();unlock()}}><div className="lock-notif-title"><span><MessageCircle size={15} fill="#43c95a"/> MESSAGES</span><span>now</span></div><strong>Baby</strong><p>Text me when you’re free, okay? 🤍</p></div><div className="lock-bottom"><button onClick={e=>{e.stopPropagation()}} aria-label="Flashlight"><Flashlight size={23}/></button><div><span>Swipe up to open</span><ChevronRight className="up-chevron" size={22}/></div><button onClick={e=>{e.stopPropagation();unlock()}} aria-label="Unlock camera"><Camera size={23}/></button></div>{!sound&&<span className="silent-label"><BellOff size={13}/> Silent</span>}</div>
-}
 export default function App(){
-  const [screen,setScreen]=useState<Screen>('lock'),[wall,setWall]=useLocal<number>('wallpaper',0),[sound,setSound]=useLocal<boolean>('sounds',true),[brightness,setBrightness]=useLocal<number>('brightness',100)
+  const [screen,setScreen]=useState<Screen>('lock'),[requestPasscode,setRequestPasscode]=useState(false),[appOrigin,setAppOrigin]=useState({x:50,y:50}),[wall,setWall]=useLocal<number>('wallpaper',0),[sound,setSound]=useLocal<boolean>('sounds',true),[brightness,setBrightness]=useLocal<number>('brightness',100)
   const [chats,setChats]=useLocal<Record<string,ChatMessage[]>>('chats',seedChats),[notes,setNotes]=useLocal<Note[]>('notes',defaultNotes),[events,setEvents]=useLocal<CalEvent[]>('calendar',[]),[reminders,setReminders]=useLocal<Reminder[]>('reminders',defaultReminders),[photos,setPhotos]=useLocal<SavedPhoto[]>('photos',[])
   const [control,setControl]=useState(false),[notifications,setNotifications]=useState(false),[spotlight,setSpotlight]=useState(false),[contactMessage,setContactMessage]=useState<string|null>(null)
   const [statusTime,setStatusTime]=useState(clockTime());useEffect(()=>{const id=window.setInterval(()=>setStatusTime(clockTime()),10000);return()=>clearInterval(id)},[])
   const gestures=useRef<{x:number;y:number;time:number}|null>(null)
   const play=useCallback((type:'tap'|'send'|'receive'|'lock')=>{if(sound)tone(type)},[sound])
-  const open=useCallback((id:AppId)=>{play('tap');setContactMessage(null);setScreen(id);setSpotlight(false)},[play])
-  const home=useCallback(()=>{play('tap');setScreen('home');setControl(false);setNotifications(false);setSpotlight(false)},[play])
-  const unlock=()=>{play('lock');setScreen('home')}
-  const lock=()=>{play('lock');setScreen('lock');setControl(false)}
+  const open=useCallback((id:AppId)=>{
+    play('tap');setContactMessage(null)
+    const glass=document.querySelector('.iphone-glass')?.getBoundingClientRect()
+    const button=(document.activeElement as HTMLElement | null)?.closest('.home-app, .dock button, .spotlight-results button')?.getBoundingClientRect()
+    if(glass&&button)setAppOrigin({x:(button.left+button.width/2-glass.left)/glass.width*100,y:(button.top+button.height/2-glass.top)/glass.height*100})
+    else setAppOrigin({x:50,y:72})
+    setScreen(id);setSpotlight(false)
+  },[play])
+  const home=useCallback(()=>{play('tap');setScreen(current=>current==='lock'?'lock':'home');setControl(false);setNotifications(false);setSpotlight(false)},[play])
+  const unlock=()=>{play('lock');setRequestPasscode(false);setScreen('home')}
+  const lock=()=>{play('lock');setRequestPasscode(false);setScreen('lock');setControl(false)}
   const onPointerDown=(e:ReactPointerEvent<HTMLDivElement>)=>{gestures.current={x:e.clientX,y:e.clientY,time:Date.now()}}
-  const onPointerUp=(e:ReactPointerEvent<HTMLDivElement>)=>{const s=gestures.current;gestures.current=null;if(!s)return;const dx=e.clientX-s.x,dy=e.clientY-s.y;if(Math.abs(dy)<72||Math.abs(dy)<Math.abs(dx)*1.15)return;const rect=e.currentTarget.getBoundingClientRect(),startY=s.y-rect.y,startX=s.x-rect.x;if(dy<0&&startY>rect.height-110){if(screen==='lock')unlock();else home()}else if(dy>0&&startY<90&&startX>rect.width*.52){setControl(true)}else if(dy>0&&startY<90){setNotifications(true)}else if(dy>0&&screen==='home'&&startY<rect.height*.65){setSpotlight(true)}}
-  useEffect(()=>{const listener=(e:KeyboardEvent)=>{if(e.key==='Escape'){if(control)setControl(false);else if(notifications)setNotifications(false);else if(spotlight)setSpotlight(false);else home()}if(e.key==='Home')home()};window.addEventListener('keydown',listener);return()=>window.removeEventListener('keydown',listener)},[control,notifications,spotlight,home])
+  const onPointerUp=(e:ReactPointerEvent<HTMLDivElement>)=>{const s=gestures.current;gestures.current=null;if(!s)return;const dx=e.clientX-s.x,dy=e.clientY-s.y;if(Math.abs(dy)<72||Math.abs(dy)<Math.abs(dx)*1.15)return;const rect=e.currentTarget.getBoundingClientRect(),startY=s.y-rect.y,startX=s.x-rect.x;if(dy<0&&startY>rect.height-110){if(screen==='lock')setRequestPasscode(true);else home()}else if(dy>0&&startY<90&&startX>rect.width*.52){setControl(true)}else if(dy>0&&startY<90){setNotifications(true)}else if(dy>0&&screen==='home'&&startY<rect.height*.65){setSpotlight(true)}}
+  useEffect(()=>{const listener=(e:KeyboardEvent)=>{if(e.key==='Escape'){if(control)setControl(false);else if(notifications)setNotifications(false);else if(spotlight)setSpotlight(false);else if(screen!=='lock')home()}if(e.key==='Home' && screen!=='lock')home()};window.addEventListener('keydown',listener);return()=>window.removeEventListener('keydown',listener)},[control,notifications,spotlight,home,screen])
+  useEffect(()=>{const fn=()=>home();window.addEventListener('ayira:home',fn);return()=>window.removeEventListener('ayira:home',fn)},[home])
   const goMessage=(id:string)=>{play('tap');setContactMessage(id);setScreen('messages')}
   const savePhoto=(src:string)=>{setPhotos(old=>[{id:uid(),src,date:new Date().toLocaleString('en-US')},...old].slice(0,18));play('receive')}
   const content=():ReactNode=>{
-    if(screen==='lock')return <LockScreen unlock={unlock} wall={wall} sound={sound}/>
+    if(screen==='lock')return <LockScreen unlock={unlock} wall={wall} sound={sound} play={()=>play('tap')} requested={requestPasscode}/>
     if(screen==='home')return <Home open={open} wall={wall} doSpotlight={()=>setSpotlight(true)}/>
     switch(screen){
       case 'messages':return <Messages key={contactMessage||'messages'} initialSelected={contactMessage} chats={chats} setChats={setChats} play={play} onContact={()=>open('contacts')}/>
@@ -234,5 +258,26 @@ export default function App(){
       case 'mail':return <MailApp/>
     }
   }
-  return <div className="site-wrap"><div className="ambient ambient-one"/><div className="ambient ambient-two"/><aside className="site-aside"><div className="brand-kicker"><span className="brand-dot"/> AN INTERACTIVE STORY</div><h1>Inside<br/><em>Ayira’s</em><br/>iPhone.</h1><p>A whole world in the palm of your hand. Read her messages, open her notes, and discover the little details that make Ayira Ross who she is.</p><div className="feature-tags"><span>iOS 18 inspired</span><span>Interactive</span><span>Story-first</span></div><div className="aside-bottom"><div className="aside-rule"/><span>01 / AYIRA ROSS</span><p>Tap to unlock. Explore everything.</p></div></aside><main className="phone-stage"><div className="phone-halo"/><div className="iphone-frame"><div className="iphone-glass" onPointerDown={onPointerDown} onPointerUp={onPointerUp} style={{filter:`brightness(${brightness}%)`}}><div className="statusbar"><button onClick={()=>screen==='lock'?unlock():setNotifications(true)} className={`status-time ${screen==='lock'||screen==='home'?'light':''}`}>{statusTime}</button><button className="dynamic-island" onClick={()=>setNotifications(true)} aria-label="Notification Center"><span/></button><button className={`status-icons ${screen==='lock'||screen==='home'?'light':''}`} onClick={()=>setControl(true)} aria-label="Control Center"><Signal size={17} fill="currentColor"/><Wifi size={16} strokeWidth={3}/><BatteryFull size={23} strokeWidth={2.5}/></button></div><div key={screen} className={`screen-body ${screen==='home'||screen==='lock'?'no-app-bg':'app-animate'}`}>{content()}</div>{screen!=='lock'&&<button className={`home-indicator ${screen==='home'||screen==='camera'?'indicator-light':''}`} onClick={home} aria-label="Go Home" title="Go Home"/>}{control&&<ControlCenter onClose={()=>setControl(false)} sound={sound} setSound={setSound} brightness={brightness} setBrightness={setBrightness} lock={lock}/ >}{notifications&&<Notifications close={()=>setNotifications(false)} openMessages={()=>open('messages')}/ >}{spotlight&&<Spotlight close={()=>setSpotlight(false)} open={open}/ >}</div><div className="side-button side-volume-one"/><div className="side-button side-volume-two"/><div className="side-button side-power"/></div><div className="phone-caption"><span className="caption-star">✦</span> A PHONE FULL OF STORIES <span className="caption-star">✦</span></div></main><aside className="guide-aside"><span className="guide-eyebrow">HOW TO EXPLORE</span><div className="guide-step"><span>01</span><p>Tap the screen to unlock.</p></div><div className="guide-step"><span>02</span><p>Open apps, read conversations, leave your own messages.</p></div><div className="guide-step"><span>03</span><p>Swipe up from the bottom or tap the home bar to go home.</p></div><div className="guide-step"><span>04</span><p>Swipe from the top-right for Control Center.</p></div><div className="guide-notice"><div>✧</div><p>A fictional phone simulation. Messages, notes, reminders and captures stay in your browser. No real calls or texts are sent.</p></div></aside></div>
+  return <div className="site-wrap">
+    <main className="phone-stage" aria-label="Ayira Ross's interactive iPhone">
+      <div className="iphone-frame">
+        <div className="iphone-glass" onPointerDown={onPointerDown} onPointerUp={onPointerUp} style={{filter:`brightness(${brightness}%)`}}>
+          <div className="statusbar">
+            <button onClick={()=>screen==='lock'?setRequestPasscode(true):setNotifications(true)} className={`status-time ${screen==='lock'||screen==='home'?'light':''}`}>{statusTime}</button>
+            <button className="dynamic-island" onClick={()=>screen!=='lock'&&setNotifications(true)} aria-label="Dynamic Island"><span/></button>
+            <button className={`status-icons ${screen==='lock'||screen==='home'?'light':''}`} onClick={()=>setControl(true)} aria-label="Open Control Center"><Signal size={17} fill="currentColor"/><Wifi size={16} strokeWidth={3}/><BatteryFull size={23} strokeWidth={2.5}/></button>
+          </div>
+          <AppFailureBoundary>
+            <div key={screen} className={`screen-body ${screen==='home'||screen==='lock'?'no-app-bg':'app-animate'}`} style={{transformOrigin:`${appOrigin.x}% ${appOrigin.y}%`}}><ScreenRenderer render={content}/></div>
+          </AppFailureBoundary>
+          {screen!=='lock'&&<button className={`home-indicator ${screen==='home'||screen==='camera'?'indicator-light':''}`} onClick={home} aria-label="Go Home" title="Go Home"/>}
+          {control&&<ControlCenter onClose={()=>setControl(false)} sound={sound} setSound={setSound} brightness={brightness} setBrightness={setBrightness} lock={lock}/>}
+          {notifications&&<Notifications close={()=>setNotifications(false)} openMessages={()=>open('messages')}/>}
+          {spotlight&&<Spotlight close={()=>setSpotlight(false)} open={open}/>}
+        </div>
+        <div className="side-button side-volume-one"/><div className="side-button side-volume-two"/>
+        <button className="side-button side-power" onClick={lock} aria-label="Lock iPhone" title="Lock iPhone"/>
+      </div>
+    </main>
+  </div>
 }

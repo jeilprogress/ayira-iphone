@@ -1,0 +1,57 @@
+import { chromium } from '@playwright/test'
+import { spawn } from 'node:child_process'
+import assert from 'node:assert/strict'
+const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4173','--strictPort'],{stdio:'inherit'})
+let browser
+try{
+  let ready=false
+  for(let i=0;i<40;i++){
+    try{const r=await fetch('http://127.0.0.1:4173/');if(r.ok){ready=true;break}}catch{}
+    await new Promise(r=>setTimeout(r,350))
+  }
+  assert.ok(ready,'Vite preview server must start')
+  browser=await chromium.launch({headless:true})
+  const page=await browser.newPage({viewport:{width:1440,height:960},deviceScaleFactor:1})
+  const errors=[]
+  page.on('pageerror',error=>errors.push(error.message))
+  await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'})
+  const box=await page.locator('.iphone-frame').boundingBox()
+  assert.ok(box,'iPhone frame must exist')
+  assert.ok(box.height/box.width>1.95 && box.height/box.width<2.2,`iPhone proportions ${box.width}×${box.height}`)
+  assert.equal(await page.locator('.site-aside, .guide-aside, .phone-halo, .phone-caption').count(),0,'No outside page decorations')
+  await page.locator('.lock-swipe-label').click()
+  for(let i=0;i<6;i++) {await page.keyboard.type('1234',{delay:15});await page.waitForTimeout(450)}
+  assert.ok(await page.getByText('iPhone Unavailable').isVisible(),'6 wrong entries must lock the phone')
+  let lock=await page.evaluate(()=>JSON.parse(localStorage.getItem('ayira-phone-v2:passcode-lockout')))
+  assert.equal(lock.failed,6)
+  assert.ok(lock.lockedUntil>Date.now()+40_000,'First lockout must be close to 60 seconds')
+  await page.evaluate(()=>{const x=JSON.parse(localStorage.getItem('ayira-phone-v2:passcode-lockout'));x.lockedUntil=Date.now()-1000;localStorage.setItem('ayira-phone-v2:passcode-lockout',JSON.stringify(x))})
+  await page.reload()
+  await page.locator('.lock-swipe-label').click()
+  await page.keyboard.type('1234',{delay:15})
+  lock=await page.evaluate(()=>JSON.parse(localStorage.getItem('ayira-phone-v2:passcode-lockout')))
+  assert.equal(lock.failed,7)
+  assert.ok(lock.lockedUntil>Date.now()+240_000,'7th wrong entry must lock for five minutes')
+  await page.evaluate(()=>{const x=JSON.parse(localStorage.getItem('ayira-phone-v2:passcode-lockout'));x.lockedUntil=Date.now()-1000;localStorage.setItem('ayira-phone-v2:passcode-lockout',JSON.stringify(x))})
+  await page.reload()
+  await page.locator('.lock-swipe-label').click()
+  await page.keyboard.type('1234',{delay:15})
+  lock=await page.evaluate(()=>JSON.parse(localStorage.getItem('ayira-phone-v2:passcode-lockout')))
+  assert.equal(lock.failed,8)
+  assert.ok(lock.lockedUntil>Date.now()+840_000,'8th wrong entry must lock for 15 minutes')
+  await page.evaluate(()=>{const x=JSON.parse(localStorage.getItem('ayira-phone-v2:passcode-lockout'));x.lockedUntil=Date.now()-1000;localStorage.setItem('ayira-phone-v2:passcode-lockout',JSON.stringify(x))})
+  await page.reload()
+  await page.locator('.lock-swipe-label').click()
+  await page.keyboard.type('0215',{delay:40})
+  await page.waitForSelector('.home-screen')
+  await page.locator('.home-app').filter({hasText:'Messages'}).first().click()
+  await page.locator('.thread-list-item').filter({hasText:'Baby'}).first().click()
+  await page.getByRole('textbox',{name:'Type a message'}).fill('hi baby')
+  await page.getByRole('button',{name:'Send message'}).click()
+  await page.getByText('hi baby',{exact:true}).waitFor({timeout:5000})
+  await page.getByText('Hi, baby. What’s up?',{exact:true}).waitFor({timeout:8000})
+  assert.ok(await page.locator('.messages-thread').isVisible(),'Messages thread must still be visible after sending')
+  assert.equal(errors.length,0,`Unexpected browser errors: ${errors.join('; ')}`)
+  await page.screenshot({path:'ayira-browser-test.png'})
+  console.log('PASS: device ratio, no outer decoration, passcode 6/7/8 lockouts and reset, message send+scripted reply, no JS errors')
+} finally {if(browser)await browser.close();server.kill('SIGTERM')}
