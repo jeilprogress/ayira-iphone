@@ -68,17 +68,42 @@ export default function LockScreen({unlock,wall,sound,play,requested}:{unlock:()
     return () => window.removeEventListener('keydown',onKey)
   },[passcode,entry,lock,locked,shake])
   const date = new Date(now)
-  return <div className={`lock-screen ios-lock wallpaper-${wall} ${passcode?'passcode-active':''}`}><StoryMedia name="lockscreen" className="story-wallpaper-image" alt=""/>
+  return <div className={'lock-screen ios-lock ios6-lock wallpaper-'+wall+(passcode?' passcode-active':'')}>
+    <StoryMedia name="lockscreen" className="story-wallpaper-image" alt=""/>
     {!passcode ? <>
-      <div className="lock-center"><LockKeyhole size={17} strokeWidth={2.5}/><div className="lock-date">{date.toLocaleDateString('en-US',{timeZone:'Asia/Manila',weekday:'long',month:'long',day:'numeric'})}</div><div className="lock-time">{date.toLocaleTimeString('en-US',{timeZone:'Asia/Manila',hour:'numeric',minute:'2-digit',hour12:false})}</div></div>
-      <button className="lock-notif" onClick={activate} aria-label="Open notification and unlock"><div className="lock-notif-title"><span><span className="notif-messages-icon"><MessageCircle size={12} fill="white" stroke="white"/></span> MESSAGES</span><span>now</span></div><strong>Baby</strong><p>Text me when you’re free, okay? 🤍</p></button>
-      <div className="lock-bottom"><button onClick={e=>e.stopPropagation()} aria-label="Flashlight"><Flashlight size={22}/></button><button className="lock-swipe-label" onClick={activate} aria-label="Enter passcode"><ChevronUp size={23}/><span>Swipe up to unlock</span></button><button onClick={activate} aria-label="Unlock camera"><Camera size={23}/></button></div>
+      <div className="lock-center ios6-lock-clock">
+        <LockKeyhole size={15} strokeWidth={2.4}/>
+        <div className="lock-date">{date.toLocaleDateString('en-US',{timeZone:'Asia/Manila',weekday:'long',month:'long',day:'numeric'})}</div>
+        <div className="lock-time">{date.toLocaleTimeString('en-US',{timeZone:'Asia/Manila',hour:'2-digit',minute:'2-digit',hour12:false})}</div>
+      </div>
+      <button className="lock-notif ios6-lock-notification" onClick={activate} aria-label="Open notification and unlock">
+        <div className="lock-notif-title"><span><span className="notif-messages-icon"><MessageCircle size={12} fill="white" stroke="white"/></span> MESSAGES</span><span>now</span></div>
+        <strong>Baby</strong><p>Text me when you’re free, okay? 🤍</p>
+      </button>
       <button className="lock-tap-area" onClick={activate} aria-label="Open passcode keypad"/>
+      <div className="lock-bottom ios6-lock-bottom">
+        <button onClick={e=>e.stopPropagation()} aria-label="Flashlight"><Flashlight size={23}/></button>
+        <button className="lock-swipe-label" onClick={activate} aria-label="Enter passcode"><ChevronUp size={21}/><span>Swipe up to unlock</span></button>
+        <button onClick={activate} aria-label="Unlock camera"><Camera size={23}/></button>
+      </div>
       {!sound&&<span className="silent-label"><BellOff size={13}/> Silent Mode</span>}
-    </> : <div className="passcode-panel">
-      <div className="passcode-top"><LockKeyhole size={16}/><span>Ayira's iPhone</span></div>
-      <div className="passcode-prompt"><h1>{locked ? 'iPhone Unavailable' : 'Enter Passcode'}</h1>{locked ? <><p>Try again in {timeLeft(remaining)}</p>{lock.resetOnExpiry&&<small>Attempts reset after this lockout.</small>}</> : <><div className={`passcode-dots ${shake?'passcode-shake':''}`} aria-label={`${entry.length} of 4 digits entered`}>{[0,1,2,3].map(n=><i key={n} className={n<entry.length?'filled':''}/>)}</div><div className="passcode-error" role="status">{error}</div></>}</div>
-      <div className={`passcode-pad ${locked?'is-disabled':''}`}>{[['1',''],['2','ABC'],['3','DEF'],['4','GHI'],['5','JKL'],['6','MNO'],['7','PQRS'],['8','TUV'],['9','WXYZ']].map(([d,letters])=><button key={d} disabled={locked} onClick={()=>press(d)} className="passcode-digit" aria-label={`Digit ${d}`}><span>{d}</span><small>{letters}</small></button>)}<span/><button disabled={locked} className="passcode-digit" onClick={()=>press('0')}><span>0</span></button><button disabled={locked} className="passcode-delete" onClick={()=>press('delete')} aria-label="Delete last digit"><Delete size={23}/></button></div>
+    </> : <div className="passcode-panel ios6-passcode-panel">
+      <div className="ios6-passcode-icon"><LockKeyhole size={18} strokeWidth={2}/></div>
+      <div className="passcode-prompt ios6-passcode-prompt">
+        <h1>{locked?'iPhone Unavailable':'Enter Passcode'}</h1>
+        {locked?<p className="ios6-lockout-time">Try again in {timeLeft(remaining)}</p>:<>
+          <div className={'passcode-dots'+(shake?' passcode-shake':'')} aria-label={entry.length+' of 4 digits entered'}>
+            {[0,1,2,3].map(n=><i key={n} className={n<entry.length?'filled':''}/>)}
+          </div>
+          <div className="passcode-error" role="status">{error}</div>
+        </>}
+      </div>
+      <div className={'passcode-pad ios6-passcode-pad'+(locked?' is-disabled':'')}>
+        {[['1',''],['2','ABC'],['3','DEF'],['4','GHI'],['5','JKL'],['6','MNO'],['7','PQRS'],['8','TUV'],['9','WXYZ']].map(([d,letters])=><button key={d} disabled={locked} onClick={()=>press(d)} className="passcode-digit" aria-label={'Digit '+d}><span>{d}</span><small>{letters}</small></button>)}
+        <span/>
+        <button disabled={locked} className="passcode-digit" onClick={()=>press('0')} aria-label="Digit 0"><span>0</span></button>
+        <button disabled={locked} className="passcode-delete" onClick={()=>press('delete')} aria-label="Delete last digit"><Delete size={23}/></button>
+      </div>
       <button className="passcode-cancel" onClick={()=>{setPasscode(false);setEntry('');setError('')}}>Cancel</button>
     </div>}
   </div>
