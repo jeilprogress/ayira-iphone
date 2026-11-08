@@ -120,3 +120,113 @@ button:focus-visible{outline:2px solid #007aff!important;outline-offset:2px!impo
 @media(max-height:720px){.home-widgets>button{height:105px!important;}.home-screen{padding-top:53px!important;}.home-grid{row-gap:9px!important;}.home-app .app-icon{width:50px!important;height:50px!important;}.ios-lock .lock-time{font-size:76px!important;}}
 @media(max-width:375px){.home-screen{padding-left:11px!important;padding-right:11px!important;}.home-app .app-icon{width:49px!important;height:49px!important;}.home-widgets{gap:9px!important;}.dock .app-icon{width:52px!important;height:52px!important;}}
 @media(prefers-reduced-motion:reduce){.app-animate,.no-app-bg:has(.home-screen),.message-row{animation:none!important;}.home-app,.app-icon{transition:none!important;}}
+
+
+/* iOS 18 fidelity v5: read-only author phone, iMessage, call and two-page Home. */
+:root{--ios5-blue:#007aff;--ios5-muted:#8e8e93;--ios5-sep:#dcdce1;--ios5-group:#f2f2f7}
+.dynamic-island{width:120px!important;height:35px!important;border-radius:21px!important;background:#000!important;box-shadow:none!important;top:9px!important}
+.statusbar{z-index:60!important}
+.status-time,.status-icons{font-weight:650!important;letter-spacing:-.3px!important}
+.home-screen .home-grid{row-gap:20px!important}
+.home-screen .home-grid-page-1{padding-top:14px!important}
+.home-screen .weather-widget span{font-size:12px!important}
+.home-screen .weather-widget b{font-size:34px!important}
+/* Messages: compact native navigation, circular pinned contacts and searchable recents. */
+.ios5-messages-list{background:#fff!important;color:#111;display:flex!important;flex-direction:column!important;padding:55px 0 0!important;overflow:hidden!important;min-height:0!important}
+.ios5-messages-nav{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;gap:8px;padding:9px 19px 9px!important;min-height:48px;flex-shrink:0}
+.ios5-messages-nav button{font-size:16px;color:var(--ios5-blue);display:flex;align-items:center}
+.ios5-messages-nav button:last-child{justify-content:flex-end}
+.ios5-messages-nav strong{text-align:center;font-size:18px;font-weight:600;letter-spacing:-.4px}
+.ios5-messages-pinned{display:grid;grid-template-columns:repeat(3,1fr);column-gap:10px;row-gap:12px;align-items:center;justify-items:center;flex-shrink:0;padding:9px 10px 21px!important}
+.ios5-messages-pinned button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;min-width:0;max-width:90px}
+.ios5-messages-pinned .avatar{width:66px!important;height:66px!important;border-radius:50%!important;box-shadow:0 5px 10px #0000000b}
+.ios5-messages-pinned button>span:last-child{font-size:12px;color:#83838b;max-width:87px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ios5-pin-unread{position:absolute;top:54px;right:5px;width:11px;height:11px;background:#0a84ff;border:2px solid white;border-radius:50%}
+.ios5-conversation-list{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;background:#fff}
+.ios5-conversation-row{position:relative;width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px 11px 23px;text-align:left;min-height:77px;border-bottom:1px solid #e5e5e9;background:#fff}
+.ios5-conversation-row .avatar{width:46px!important;height:46px!important;flex:none;border-radius:50%}
+.ios5-conversation-row>div:nth-child(2){min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}
+.ios5-conversation-row strong{font-size:16px;font-weight:630;letter-spacing:-.2px}
+.ios5-conversation-row div>span{font-size:14px;line-height:1.25;color:#8e8e93;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ios5-conversation-row time{color:#9999a0;white-space:nowrap;font-size:11px;align-self:flex-start;padding-top:3px}
+.ios5-conversation-row>svg{color:#c6c6ca;flex:none}
+.ios5-row-unread{position:absolute;left:8px;top:calc(50% - 5px);height:9px;width:9px;background:#0a84ff;border-radius:50%}
+.ios5-message-search-bar{background:rgba(248,248,249,.96);display:flex;align-items:center;gap:12px;flex-shrink:0;padding:9px 16px 19px;border-top:1px solid #ebebee;backdrop-filter:blur(14px)}
+.ios5-message-search-bar label{min-width:0;flex:1;display:flex;align-items:center;gap:8px;background:#ebebed;border-radius:25px;border:1px solid #dadadd;padding:8px 11px;color:#7d7d84}
+.ios5-message-search-bar input{border:0;outline:0;background:transparent;color:#111;min-width:0;flex:1;font-size:15px}
+.ios5-message-search-bar>button{color:#007aff;display:grid;place-items:center;background:#fff;border:1px solid #e5e5e9;width:43px;height:43px;border-radius:50%;flex:none}
+.ios5-no-messages{text-align:center;padding:27px 12px;color:#8e8e93}
+.ios5-message-thread .message-bubble{font-size:16px!important}
+.ios5-message-thread .thread-header{backdrop-filter:blur(22px)!important}
+.ios5-message-thread .composer-wrap{background:rgba(245,245,248,.94)!important}
+/* Notes is read only by construction: no editor, no add/delete/modify handlers. */
+.ios5-notes{background:var(--ios5-group)!important;color:#17171c;display:flex!important;flex-direction:column!important;padding:56px 0 0!important;min-height:0;overflow:hidden}
+.ios5-notes-nav{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;min-height:40px;padding:6px 17px 7px}
+.ios5-notes-nav button{display:flex;align-items:center;gap:0;color:var(--ios5-blue);font-size:17px}
+.ios5-notes-lock{color:#98989e}
+.ios5-notes>h1{font-size:35px!important;margin:8px 19px 11px!important;padding:0!important;font-weight:740!important}
+.ios5-notes-search{background:#e4e4e8;border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:8px;margin:0 17px 13px;color:#909096}
+.ios5-notes-search input{background:transparent;border:0;outline:0;font-size:16px;min-width:0;flex:1;color:#141414}
+.ios5-note-list{margin:0 16px 0;background:#fff;border-radius:12px;overflow:auto;min-height:0;flex:1}
+.ios5-note-row{background:#fff;text-align:left;width:100%;padding:13px 15px 11px;display:flex;flex-direction:column;gap:4px;border-bottom:1px solid #e6e6e9;min-height:77px}
+.ios5-note-row strong{font-size:16px;font-weight:670;letter-spacing:-.4px}
+.ios5-note-row span{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#8e8e93;font-size:14px}
+.ios5-note-row time{color:#222;margin-right:8px}
+.ios5-notes-footer{display:flex;align-items:center;justify-content:space-between;flex:none;padding:12px 19px 21px;border-top:1px solid #dedee2;background:rgba(249,249,251,.95);color:#8e8e93;font-size:13px}
+.ios5-readonly-mark{display:flex;align-items:center;gap:5px;color:#a0a0a5}
+.ios5-folder-label{color:#8e8e93;font-size:12px;font-weight:600;padding:8px 21px}
+.ios5-folder-row{margin:0 16px;display:flex;gap:12px;align-items:center;background:#fff;border-radius:12px;padding:15px;text-align:left}
+.ios5-folder-row span{flex:1}
+.ios5-folder-row small{color:#a0a0a5}
+.ios5-note-reading{padding:13px 20px 28px;min-height:0;flex:1;overflow:auto;background:#fff}
+.ios5-note-open{background:#fff!important}
+.ios5-note-date{text-align:center;color:#a2a2a8;font-size:12px;margin:10px 0 17px}
+.ios5-note-reading h1{font-size:28px!important;line-height:1.2;margin:0 0 14px!important}
+.ios5-note-reading p{font-size:16px;line-height:1.5;white-space:pre-wrap;margin:0 0 12px;color:#202025}
+.ios5-no-results{text-align:center;color:#8e8e93;margin:25px 12px}
+/* Phone recent calls and dark native-like call simulation. */
+.ios5-phone{padding:70px 0 0!important;background:#f8f8fa!important;color:#141419;display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}
+.ios5-phone h1{margin:8px 20px 13px!important;font-size:34px!important}
+.ios5-phone-list{background:#fff;min-height:0;overflow:auto;flex:1}
+.ios5-recent-row{position:relative;display:flex;align-items:center;gap:12px;padding:12px 19px;min-height:70px;width:100%;text-align:left;border-bottom:1px solid #e7e7ec;background:#fff}
+.ios5-recent-row>div{display:flex;flex-direction:column;flex:1;gap:4px;min-width:0}
+.ios5-recent-row strong{font-size:17px;font-weight:600}
+.ios5-recent-row span{color:#8e8e93;font-size:13px}
+.ios5-recent-row time{font-size:12px;color:#9a9aa1}
+.ios5-recent-row>svg{color:#007aff}
+.ios5-phone-tabs{display:flex;align-items:center;justify-content:space-around;padding:9px 5px 21px;border-top:1px solid #e2e2e7;background:#f8f8fa;flex:none}
+.ios5-phone-tabs button{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;color:#8b8b92;font-size:10px}
+.ios5-phone-tabs button.active{color:#007aff}
+.ios5-dialer{display:flex;flex-direction:column;align-items:center;min-height:0;overflow:auto;flex:1}
+.ios5-dialer-number{height:50px;min-height:50px;font-size:30px;font-weight:300}
+.ios5-dialer-grid,.ios5-call-keypad{display:grid;grid-template-columns:repeat(3,72px);gap:9px;justify-content:center}
+.ios5-dialer-grid button,.ios5-call-keypad button{height:69px;width:69px;border-radius:50%;background:#ececf0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px}
+.ios5-dialer-grid strong,.ios5-call-keypad strong{font-weight:350;font-size:28px;line-height:1}
+.ios5-dialer-grid small,.ios5-call-keypad small{letter-spacing:1px;font-size:9px}
+.ios5-dial-actions{display:flex;align-items:center;justify-content:space-around;width:255px;margin:13px 0 7px}
+.ios5-dial-actions button{display:grid;place-items:center}
+.ios5-dial-call{background:#32c759;color:#fff;border-radius:50%;width:62px;height:62px}
+.ios5-call{background:linear-gradient(180deg,#193454 0%,#2d415f 100%)!important;color:#fff!important;display:flex!important;flex-direction:column!important;padding:167px 25px 25px!important;min-height:0;overflow:hidden}
+.iphone-glass:has(.ios5-call)>.statusbar .status-time,.iphone-glass:has(.ios5-call)>.statusbar .status-icons{color:#fff!important}
+.ios5-call-heading{text-align:center;flex:none}
+.ios5-call-heading h1{font-size:35px!important;font-weight:440!important;line-height:1.15;margin:0!important;letter-spacing:-1px}
+.ios5-call-heading span{display:block;color:#c2cbd7;font-size:20px;margin-top:8px}
+.ios5-call-controls{margin-top:80px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:25px 12px;justify-content:center;flex:none}
+.ios5-call-button{display:flex;flex-direction:column;align-items:center;gap:10px;color:#fff}
+.ios5-call-button:disabled{opacity:.9}
+.ios5-call-circle{width:78px;height:78px;border-radius:50%;background:#36577e;display:grid;place-items:center;color:#fff;transition:transform .18s,background .18s}
+.ios5-call-button:active .ios5-call-circle{transform:scale(.92)}
+.ios5-call-button.is-active .ios5-call-circle{background:#b2c1d3;color:#24405e}
+.ios5-call-button small{font-size:14px;font-weight:400;letter-spacing:0}
+.ios5-call-bottom{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:33px;flex:none;padding:18px 0 0}
+.ios5-call-bottom>span{font-size:16px}
+.ios5-end-call{background:#f25347;color:#fff;border-radius:50%;width:83px;height:83px;display:grid;place-items:center;box-shadow:0 5px 15px #071f3450}
+.ios5-end-call svg{transform:rotate(135deg)}
+.ios5-call-simulator{color:#a2afc0;flex:none;font-size:10px;text-align:center;padding:8px 0 6px}
+.ios5-call-number{text-align:center;font-size:19px;margin:22px 0 6px}
+.ios5-call-keypad{margin-top:12px;grid-template-columns:repeat(3,64px);gap:6px}
+.ios5-call-keypad button{height:64px;width:64px;color:#fff;background:#36577e}
+.ios5-hide-keypad{align-self:center;margin:12px 0 0;background:#36577e;color:#fff;padding:9px 16px;border-radius:999px}
+@media(max-height:750px){.ios5-call{padding-top:118px!important}.ios5-call-controls{margin-top:46px;gap:17px 9px}.ios5-call-circle{height:66px;width:66px}.ios5-messages-pinned .avatar{width:57px!important;height:57px!important}.ios5-messages-pinned{row-gap:9px}}
+@media(max-width:375px){.ios5-call-circle{width:66px;height:66px}.ios5-call-controls{gap:18px 8px}.ios5-messages-pinned .avatar{width:57px!important;height:57px!important}.ios5-messages-pinned{row-gap:10px}}
+@media(prefers-reduced-motion:reduce){.ios5-call-circle{transition:none!important}}
