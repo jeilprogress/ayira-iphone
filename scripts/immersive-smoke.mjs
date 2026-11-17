@@ -1,4 +1,4 @@
-import { chromium } from '@playwright/test'
+import { chromium, expect } from '@playwright/test'
 import { spawn } from 'node:child_process'
 import assert from 'node:assert/strict'
 
@@ -62,11 +62,12 @@ try {
   await page.mouse.move(glass.x+40,glass.y+180,{steps:8})
   await page.mouse.up()
   await page.locator('.notification-item').click()
-  assert.ok(await page.getByText('Enter Passcode',{exact:true}).isVisible(),'Notification must request passcode')
+  await expect(page.getByRole('heading',{name:'Enter Passcode',exact:true})).toBeVisible()
   assert.equal(await page.locator('.messages-thread').count(),0,'No Messages behind lock')
   await page.keyboard.type('0215',{delay:60})
   await page.waitForSelector('.home-screen')
   await page.setViewportSize({width:360,height:740})
+  await expect.poll(async()=>{const b=await page.locator('.iphone-frame').boundingBox();return b.x>=0&&b.y>=0&&b.x+b.width<=361&&b.y+b.height<=741}).toBe(true)
   const frame=await page.locator('.iphone-frame').boundingBox()
   assert.ok(frame.x>=0&&frame.y>=0&&frame.x+frame.width<=361&&frame.y+frame.height<=741,'Phone must fit narrow viewport')
   assert.ok(Math.abs(frame.width/frame.height-414/868)<.01,'Device keeps its aspect ratio')
