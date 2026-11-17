@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, Component, type ErrorInfo, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react'
+import { useState, useEffect, useRef, useCallback, Component, type ErrorInfo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import IosIcon from './IosIcon'
 import LockScreen from './LockScreen'
 import StoryMedia from './StoryMedia'
@@ -26,7 +26,7 @@ const appList: {id: AppId; title: string; icon: LucideIcon; color: string; text?
   { id: 'reminders', title: 'Reminders', icon: ListTodo, color: '#fff', text: '#5f89e2' },
   { id: 'files', title: 'Files', icon: Folder, color: '#f5f6fd', text: '#428cf4' },
   { id: 'settings', title: 'Settings', icon: Settings, color: 'linear-gradient(#a4abb9,#606a7b)' },
-  { id: 'music', title: 'Music', icon: Music2, color: '#fff', text: '#f13459' },
+  { id: 'music', title: 'Music', icon: Music2, color: 'linear-gradient(#fc5b73,#fa243c)' },
   { id: 'calculator', title: 'Calculator', icon: Calculator, color: '#222222' },
   { id: 'contacts', title: 'Contacts', icon: ContactRound, color: '#b8bdcc' },
   { id: 'safari', title: 'Safari', icon: Compass, color: '#f6f9ff', text: '#2296ed' },
@@ -89,6 +89,7 @@ function Messages({chats,setChats,play,onContact,initialSelected=null}: {chats:R
   const [typing,setTyping] = useState<string | null>(null)
   const [compose,setCompose] = useState(false)
   const [showDetails,setShowDetails] = useState(false)
+  const [showOptions,setShowOptions] = useState(false)
   const [unread,setUnread] = useLocal<string[]>('unread', [])
   const end = useRef<HTMLDivElement>(null)
   useEffect(() => { const scrollPane=end.current?.closest('.thread-messages'); if(scrollPane)scrollPane.scrollTop=scrollPane.scrollHeight }, [selected, chats, typing])
@@ -104,18 +105,20 @@ function Messages({chats,setChats,play,onContact,initialSelected=null}: {chats:R
     }
   }
   if(selected){const p=contacts.find(x=>x.id===selected) || contacts[0],items=Array.isArray(chats[selected])?chats[selected]:[];return <div className="messages-thread app-page ios5-message-thread">
-    <div className="thread-header"><button onClick={()=>{setSelected(null);setShowDetails(false)}} className="thread-back"><ChevronLeft size={28}/><span className="thread-count">{contacts.length}</span></button><button className="thread-person" onClick={()=>setShowDetails(true)}><Avatar person={p} size={37}/><span>{p.name} <ChevronRight size={12}/></span></button><button className="thread-video" onClick={()=>setShowDetails(true)} aria-label="Contact information"><Video size={24}/></button></div>
-    <div className="thread-messages scroll-area" aria-label={`Conversation with ${p.name}`}><div className="chat-date-separator">iMessage <span>· End-to-end encrypted</span></div>{items.map((it,idx)=><div className={`message-row ${it.from==='me'?'sent':'received'}`} key={it.id}>{it.from==='them' && idx>0 && items[idx-1].from==='me' ? <span className="bubble-space"/>:null}<div className="message-bubble">{it.text}</div></div>)}{typing===selected&&<div className="message-row received"><div className="message-bubble typing-dots"><span/><span/><span/></div></div>}<div className="message-delivered">{typing===selected?'':items[items.length-1]?.from==='me'?'Delivered':''}</div><div ref={end}/></div>
-    <div className="composer-wrap"><button className="circle-plus" onClick={()=>setShowDetails(true)} aria-label="More options"><Plus size={22}/></button><div className="composer"><input value={draft} maxLength={2500} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();sendMessage()}}} placeholder="iMessage" aria-label="Type a message"/><button className={draft.trim()?'send-active':'send-inactive'} onClick={sendMessage} aria-label="Send message"><ArrowUpRightIcon/></button></div><button className="composer-mic" onClick={()=>setShowDetails(true)} aria-label="Audio messaging"><Mic size={21}/></button></div>
-    {showDetails&&<div className="modal-shade" onClick={()=>setShowDetails(false)}><div className="contact-sheet" onClick={e=>e.stopPropagation()}><div className="sheet-grabber"/><button className="sheet-close" onClick={()=>setShowDetails(false)}><X size={18}/></button><Avatar person={p} size={76}/><h2>{p.name}</h2><p>{p.fullName}</p><div className="sheet-actions"><button onClick={()=>{setShowDetails(false);onContact(p.id)}}><Info size={22}/>info</button><button onClick={()=>setShowDetails(false)}><Phone size={22}/>audio</button><button onClick={()=>setShowDetails(false)}><Video size={22}/>video</button></div><p className="sheet-note">{p.id==='baby'?'Mathine Vale · Baby 🤍':''}</p></div></div>}
+    <div className="thread-header"><button onClick={()=>{setSelected(null);setShowDetails(false)}} className="thread-back" aria-label="Back to Messages"><ChevronLeft size={28}/></button><button className="thread-person" onClick={()=>setShowDetails(true)}><Avatar person={p} size={37}/><span>{p.name} <ChevronRight size={12}/></span></button><button className="thread-video" disabled aria-label="Video call unavailable"><Video size={24}/></button></div>
+    <div className="thread-messages scroll-area" aria-label={`Conversation with ${p.name}`}><div className="chat-date-separator">iMessage<br/><span>Today</span></div>{items.map((it,idx)=><div className={`message-row ${it.from==='me'?'sent':'received'} ${items[idx+1]?.from===it.from?'grouped':'group-end'}`} key={it.id}>{it.from==='them' && idx>0 && items[idx-1].from==='me' ? <span className="bubble-space"/>:null}<div className="message-bubble">{it.text}</div></div>)}{typing===selected&&<div className="message-row received"><div className="message-bubble typing-dots"><span/><span/><span/></div></div>}<div className="message-delivered">{typing===selected?'':items[items.length-1]?.from==='me'?'Delivered':''}</div><div ref={end}/></div>
+    <div className="composer-wrap"><button className="circle-plus" onClick={()=>setShowOptions(true)} aria-label="More options"><Plus size={22}/></button><div className="composer"><input value={draft} maxLength={2500} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();sendMessage()}}} placeholder="iMessage" aria-label="Type a message"/><button className={draft.trim()?'send-active':'send-inactive'} onClick={sendMessage} aria-label="Send message"><ArrowUpRightIcon/></button></div><button className="composer-mic" disabled aria-label="Audio messaging unavailable"><Mic size={21}/></button></div>
+    {showOptions&&<div className="modal-shade" onClick={()=>setShowOptions(false)}><div className="message-options" onClick={e=>e.stopPropagation()}><div className="sheet-grabber"/><h2>Conversation</h2><button onClick={()=>{setShowOptions(false);setShowDetails(true)}}><ContactRound size={24}/>Contact details</button><button onClick={()=>{setUnread(old=>old.includes(p.id)?old:[...old,p.id]);setShowOptions(false);setSelected(null)}}><MessageCircle size={24}/>Mark as unread</button><button onClick={()=>setShowOptions(false)}>Cancel</button></div></div>}
+    {showDetails&&<div className="modal-shade" onClick={()=>setShowDetails(false)}><div className="contact-sheet" onClick={e=>e.stopPropagation()}><div className="sheet-grabber"/><button className="sheet-close" onClick={()=>setShowDetails(false)}><X size={18}/></button><Avatar person={p} size={76}/><h2>{p.name}</h2><p>{p.fullName}</p><div className="sheet-actions"><button onClick={()=>{setShowDetails(false);onContact(p.id)}}><Info size={22}/>info</button><button disabled aria-label="Audio call unavailable"><Phone size={22}/>audio</button><button disabled aria-label="Video call unavailable"><Video size={22}/>video</button></div><p className="sheet-note">{p.id==='baby'?'Mathine Vale · Baby 🤍':''}</p></div></div>}
   </div>}
   const sorted=contacts.filter(c=>(filter==='all'||unread.includes(c.id))&&((c.name+' '+c.fullName+' '+((Array.isArray(chats[c.id])?chats[c.id]:[]).at(-1)?.text||'')).toLowerCase().includes(search.toLowerCase())))
-  const pinned=sorted.slice(0,6)
+  const pinned=sorted.filter(c=>c.id==='baby')
   return <div className="app-page ios5-messages-list scroll-area">
-    <div className="ios5-messages-nav"><button onClick={()=>setUnread(contacts.map(c=>c.id))}>Edit</button><strong>Messages</strong><button onClick={()=>setFilter(v=>v==='all'?'unread':'all')} aria-label="Filter messages"><SlidersHorizontal size={22}/></button></div>
+    <div className="ios5-messages-nav"><button onClick={()=>setFilter(v=>v==='all'?'unread':'all')}><ChevronLeft size={22}/>{filter==='all'?'Filters':'All Messages'}</button><button onClick={()=>setCompose(true)} aria-label="New message"><SquarePen size={24}/></button></div>
+    <h1>Messages</h1>
+    <label className="message-search search-input"><Search size={18}/><input placeholder="Search" aria-label="Search messages" value={search} onChange={e=>setSearch(e.target.value)}/></label>
     <div className="ios5-messages-pinned">{pinned.map(c=><button onClick={()=>openChat(c.id)} key={c.id}><Avatar person={c} size={64}/>{unread.includes(c.id)&&<i className="ios5-pin-unread"/>}<span>{c.name}</span></button>)}</div>
     <div className="ios5-conversation-list">{sorted.map(c=>{const items=Array.isArray(chats[c.id])?chats[c.id]:[];const last=items.at(-1);return <button className="ios5-conversation-row" key={c.id} onClick={()=>openChat(c.id)}><Avatar person={c} size={46}/><div><strong>{c.name}</strong><span>{last?.from==='me'?'You: ':''}{last?.text||'Start a conversation'}</span></div><time>{last?.time||'Yesterday'}</time><ChevronRight size={16}/>{unread.includes(c.id)&&<i className="ios5-row-unread"/>}</button>})}{!sorted.length&&<div className="ios5-no-messages">No Conversations</div>}</div>
-    <div className="ios5-message-search-bar"><label><Search size={19}/><input placeholder="Search" aria-label="Search messages" value={search} onChange={e=>setSearch(e.target.value)}/><Mic size={18}/></label><button onClick={()=>setCompose(true)} aria-label="New message"><SquarePen size={23}/></button></div>
     {compose&&<div className="modal-shade" onClick={()=>setCompose(false)}><div className="compose-sheet" onClick={e=>e.stopPropagation()}><div className="sheet-grabber"/><div className="compose-title"><button onClick={()=>setCompose(false)}>Cancel</button><strong>New Message</strong><span/></div><p>To: <span>Select a contact</span></p>{contacts.map(c=><button className="contact-pick" key={c.id} onClick={()=>openChat(c.id)}><Avatar person={c} size={36}/><span>{c.name}</span><ChevronRight size={18}/></button>)}</div></div>}
   </div>
 }
@@ -229,6 +232,7 @@ function ContactsApp({openMessage}:{openMessage:(id:string)=>void}){
 }
 function PhoneApp({openMessage}:{openMessage:(id:string)=>void}){
   const [tab,setTab]=useState<'favorites'|'recents'|'contacts'|'keypad'>('recents')
+  const [contactDetail,setContactDetail]=useState<Contact|null>(null)
   const [digits,setDigits]=useState('')
   const [calling,setCalling]=useState(false)
   const [chosen,setChosen]=useState<Contact|null>(null)
@@ -256,9 +260,10 @@ function PhoneApp({openMessage}:{openMessage:(id:string)=>void}){
       
     </div>
   }
+  if(contactDetail)return <div className="app-page contacts-app"><div className="simple-nav"><button onClick={()=>setContactDetail(null)}><ChevronLeft size={24}/>Contacts</button></div><div className="contact-detail"><Avatar person={contactDetail} size={100}/><h1>{contactDetail.name}</h1><p>{contactDetail.fullName}</p><div className="contact-actions"><button onClick={()=>openMessage(contactDetail.id)}><MessageCircle size={23}/>message</button><button onClick={()=>{startCall(contactDetail);setContactDetail(null)}}><Phone size={23}/>call</button></div><div className="ios-group"><small>mobile</small><strong>{contactDetail.number}</strong></div></div></div>
   return <div className="app-page ios5-phone">
     <h1>{tab==='recents'?'Recents':tab==='favorites'?'Favorites':tab==='contacts'?'Contacts':'Keypad'}</h1>
-    {tab==='keypad'?<div className="ios5-dialer"><div className="ios5-dialer-number">{digits||' '}</div><div className="ios5-dialer-grid">{numbers.map(([n,l])=><button key={n} onClick={()=>setDigits(v=>v+n)}><strong>{n}</strong><small>{l}</small></button>)}</div><div className="ios5-dial-actions"><button onClick={()=>setDigits(v=>v.slice(0,-1))} aria-label="Delete number"><Delete size={21}/></button><button className="ios5-dial-call" onClick={()=>startCall(contacts.find(c=>c.number===digits)||null)} aria-label="Call"><Phone size={26} fill="currentColor"/></button><span/></div></div>:<div className="ios5-phone-list scroll-area">{(tab==='favorites'?contacts.slice(0,2):contacts).map((c,i)=><button key={c.id} onClick={()=>startCall(c)} className="ios5-recent-row"><div><strong>{c.name}</strong><span>{tab==='contacts'?c.number:'mobile'}</span></div><time>{i===0?'Today':'Yesterday'}</time><Info size={18}/></button>)}</div>}
+    {tab==='keypad'?<div className="ios5-dialer"><div className="ios5-dialer-number">{digits||' '}</div><div className="ios5-dialer-grid">{numbers.map(([n,l])=><button key={n} onClick={()=>setDigits(v=>v+n)}><strong>{n}</strong><small>{l}</small></button>)}</div><div className="ios5-dial-actions"><button onClick={()=>setDigits(v=>v.slice(0,-1))} aria-label="Delete number"><Delete size={21}/></button><button className="ios5-dial-call" onClick={()=>startCall(contacts.find(c=>c.number===digits)||null)} aria-label="Call"><Phone size={26} fill="currentColor"/></button><span/></div></div>:<div className="ios5-phone-list scroll-area">{(tab==='favorites'?contacts.slice(0,2):contacts).map((c,i)=><button key={c.id} onClick={()=>tab==='contacts'?setContactDetail(c):startCall(c)} className="ios5-recent-row"><div><strong>{c.name}</strong><span>{tab==='contacts'?c.number:'mobile'}</span></div><time>{i===0?'Today':'Yesterday'}</time><Info size={18}/></button>)}</div>}
     <div className="ios5-phone-tabs">{([['favorites',Star,'Favorites'],['recents',Clock3,'Recents'],['contacts',ContactRound,'Contacts'],['keypad',Grid2X2,'Keypad']] as const).map(([key,Icon,label])=><button key={key} className={tab===key?'active':''} onClick={()=>setTab(key)}><Icon size={22}/><span>{label}</span></button>)}</div>
   </div>
 }
@@ -337,8 +342,8 @@ function SafariApp(){
 }
 
 function SettingsApp({sound,setSound,wall,setWall,brightness,setBrightness}: {sound:boolean;setSound:(v:boolean)=>void;wall:number;setWall:(v:number)=>void;brightness:number;setBrightness:(v:number)=>void}){
-  const [detail,setDetail]=useState<string|null>(null),[wifi,setWifi]=useState(true),[bt,setBt]=useState(true)
-  if(detail)return <div className="app-page settings-app"><div className="simple-nav"><button onClick={()=>setDetail(null)}><ChevronLeft size={23}/>Settings</button></div><h1>{detail}</h1>{detail==='Wallpaper'?<><p className="settings-caption">Choose Ayira’s wallpaper</p><div className="wallpaper-picker"><button className="wall-sample wallpaper-0" onClick={()=>setWall(0)}>Aurora {wall===0?'✓':''}</button><button className="wall-sample wallpaper-1" onClick={()=>setWall(1)}>Dusk {wall===1?'✓':''}</button><button className="wall-sample wallpaper-2" onClick={()=>setWall(2)}>Lilac {wall===2?'✓':''}</button></div></>:detail==='Sounds & Haptics'?<div className="ios-group setting-row"><span>Interface sounds</span><button className={`switch ${sound?'on':''}`} onClick={()=>setSound(!sound)}><span/></button></div>:detail==='Display & Brightness'?<div className="ios-group"><label>Brightness</label><input className="range" type="range" min="40" max="100" value={brightness} onChange={e=>setBrightness(Number(e.target.value))}/></div>:<div className="ios-group setting-row"><span>{detail}</span><span>On</span></div>}</div>
+  const [detail,setDetail]=useState<string|null>(null),[wifi,setWifi]=useLocal('wifi',true),[bt,setBt]=useLocal('bluetooth',true)
+  if(detail)return <div className="app-page settings-app"><div className="simple-nav"><button onClick={()=>setDetail(null)}><ChevronLeft size={23}/>Settings</button></div><h1>{detail}</h1>{detail==='Wallpaper'?<><p className="settings-caption">Choose Ayira’s wallpaper</p><div className="wallpaper-picker"><button className="wall-sample wallpaper-0" style={{backgroundImage:`url(${import.meta.env.BASE_URL}media/ayira-wallpaper.webp)`}} onClick={()=>setWall(0)}>Shiba {wall===0?'✓':''}</button><button className="wall-sample wallpaper-1" onClick={()=>setWall(1)}>Dusk {wall===1?'✓':''}</button><button className="wall-sample wallpaper-2" onClick={()=>setWall(2)}>Lilac {wall===2?'✓':''}</button></div></>:detail==='Sounds & Haptics'?<div className="ios-group setting-row"><span>Interface sounds</span><button className={`switch ${sound?'on':''}`} onClick={()=>setSound(!sound)}><span/></button></div>:detail==='Display & Brightness'?<div className="ios-group"><label>Brightness</label><input className="range" type="range" min="40" max="100" value={brightness} onChange={e=>setBrightness(Number(e.target.value))}/></div>:<div className="ios-group setting-row"><span>{detail}</span><span>On</span></div>}</div>
   return <div className="app-page settings-app scroll-area"><Header title="Settings"/><div className="settings-profile"><Avatar person={{id:'me',name:'Ayira Ross',fullName:'Ayira Ross',initials:'AR',color:'#c8b9db',number:''}} size={60}/><div><strong>Ayira Ross</strong><span>Apple Account, iCloud & more</span></div><ChevronRight size={18}/></div><div className="settings-group"><div className="setting-row"><div className="setting-symbol blue"><Wifi size={18}/></div><span>Wi-Fi</span><span className="row-tail">{wifi?'Connected':'Off'}</span><button className={`mini-toggle ${wifi?'on':''}`} onClick={()=>setWifi(!wifi)} aria-label="Toggle Wi-Fi">{wifi?'On':'Off'}</button></div><div className="setting-row"><div className="setting-symbol blue"><Bluetooth size={18}/></div><span>Bluetooth</span><span className="row-tail">{bt?'On':'Off'}</span><button className={`mini-toggle ${bt?'on':''}`} onClick={()=>setBt(!bt)} aria-label="Toggle Bluetooth">{bt?'On':'Off'}</button></div><button className="setting-row" onClick={()=>setDetail('Airplane Mode')}><div className="setting-symbol orange"><Plane size={18}/></div><span>Airplane Mode</span><ChevronRight size={17}/></button></div><div className="settings-group">{([['Sounds & Haptics',Volume2,'pink'],['Display & Brightness',Sun,'blue'],['Wallpaper',Images,'cyan'],['Notifications',Bell,'red'],['Privacy & Security',LockKeyhole,'blue']] as const).map(([label,Icon,color])=><button className="setting-row" key={label} onClick={()=>setDetail(label)}><div className={`setting-symbol ${color}`}><Icon size={18}/></div><span>{label}</span><ChevronRight size={17}/></button>)}</div><div className="settings-group"><button className="setting-row" onClick={()=>setDetail('About This iPhone')}><div className="setting-symbol gray"><Info size={18}/></div><span>General</span><ChevronRight size={17}/></button></div></div>
 }
 function MusicApp(){
@@ -361,13 +366,25 @@ function WeatherApp(){
   return <div className="app-page weather-app ios6-weather scroll-area">
     <div className="ios6-weather-hero"><span>Subic, Olongapo</span><strong>31°</strong><p>Sunny</p><small>H:33°  L:26°</small></div>
     <section className="ios6-weather-card"><h3>Sunny throughout the day.</h3><div className="ios6-hourly">{hourly.map(([label,temp])=><div key={label}><span>{label}</span><Sun size={23} fill="#ffd45c" color="#ffd45c"/><strong>{temp}</strong></div>)}</div></section>
-    <section className="ios6-weather-card"><h3>5-Day Forecast</h3>{days.map(([label,icon,high,low])=><div className="ios6-forecast-row" key={label}><strong>{label}</strong><span>{icon}</span><small>{low}</small><i/><b>{high}</b></div>)}</section>
+    <section className="ios6-weather-card"><h3>5-Day Forecast</h3>{days.map(([label,icon,high,low])=><div className="ios6-forecast-row" key={label}><strong>{label}</strong><span>{icon==='⛅'?<CloudSun size={22} color="#ffde60"/>:<Sun size={22} color="#ffde60" fill="#ffde60"/>}</span><small>{low}</small><i/><b>{high}</b></div>)}</section>
     <section className="ios6-weather-squares"><div><small>UV INDEX</small><strong>8</strong><span>Very High</span></div><div><small>FEELS LIKE</small><strong>34°</strong><span>Humid</span></div></section>
   </div>
 }
 
 function FilesApp(){const [folder,setFolder]=useState<string|null>(null);return <div className="app-page files-app"><div className="simple-nav"><button onClick={()=>setFolder(null)}>{folder?<><ChevronLeft size={23}/>Browse</>:'Browse'}</button><MoreHorizontal size={22}/></div><h1>{folder||'Browse'}</h1><div className="search-input"><Search size={17}/><input placeholder="Search files"/></div>{folder?<Placeholder icon={Folder} title="This folder is empty" description="No Items"/>:<><h3>Locations</h3>{['On My iPhone','iCloud Drive','Recently Deleted'].map(f=><button key={f} className="files-row" onClick={()=>setFolder(f)}><Folder size={28} fill="#2f89ec" color="#2f89ec"/>{f}<ChevronRight size={19}/></button>)}</>}</div>}
-function MapsApp(){return <div className="app-page maps-app"><div className="map-canvas"><div className="fake-street s1"/><div className="fake-street s2"/><div className="fake-street s3"/><div className="fake-street s4"/><div className="map-park"/><span className="map-label l1">Subic</span><span className="map-label l2">Subic, Olongapo</span><div className="map-marker"><Navigation size={18} fill="#278af0"/></div></div><div className="maps-sheet"><div className="sheet-grabber"/><h2>Explore Maps</h2><div className="search-input"><Search size={18}/><input placeholder="Search Maps"/></div><div className="maps-shortcuts"><button><Star size={21}/>Favorites</button><button><MapPinned size={21}/>Places</button></div></div></div>}
+function MapsApp(){
+  const [q,setQ]=useState(''),[selected,setSelected]=useState(false)
+  return <div className="app-page maps-app">
+    <svg className="map-art" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="390" height="844" fill="#e9e8e0"/><path d="M0 0h130l-30 120 40 120-70 100 20 110-90 100Z" fill="#b3dce9"/><path d="m240 0 150 0v150l-80-20Zm-80 320 95-20 15 100-90 28Zm110 190h120v100H270Z" fill="#cce0bf"/>
+    <g stroke="#fff" strokeWidth="9" fill="none"><path d="M151-20 180 100 148 230 215 350 198 480 240 660 200 850M220-20 250 100 228 240 290 350 270 470 325 700M320-10 325 120 310 240 367 355 340 500M105 95l300 40M120 205l300 50M100 340l310 44M95 460l300 20M45 570l360 42M0 710l400 20"/></g><path d="M172-20 200 110 170 230 236 350 217 480 258 660 215 850" fill="none" stroke="#efcd8b" strokeWidth="14"/><path d="M172-20 200 110 170 230 236 350 217 480 258 660 215 850" fill="none" stroke="#fff7d9" strokeWidth="9"/><text x="22" y="310" fill="#789fad" fontSize="15" transform="rotate(-15 22 310)">Subic Bay</text><text x="233" y="227" fill="#74766e" fontSize="18" fontWeight="600">Subic</text><text x="250" y="442" fill="#92918a" fontSize="12">Olongapo</text></svg>
+    <button className="map-location-control" onClick={()=>setSelected(true)} aria-label="Show location"><Navigation size={23}/></button>
+    <div className="map-location-dot"><i/></div>
+    <div className="maps-sheet"><div className="sheet-grabber"/><h2>{selected?'Subic, Olongapo':'Search Maps'}</h2><label className="search-input"><Search size={18}/><input placeholder="Search Maps" aria-label="Search Maps" value={q} onChange={e=>setQ(e.target.value)}/>{q&&<button onClick={()=>setQ('')} aria-label="Clear search"><X size={16}/></button>}</label>
+      {q?<button className="map-result" onClick={()=>{setSelected(true);setQ('')}}><MapPinned size={24}/><span>{'Subic, Olongapo'.toLowerCase().includes(q.toLowerCase())?'Subic, Olongapo':'No saved places found'}</span></button>:<><div className="maps-shortcuts"><button onClick={()=>setSelected(true)}><Star size={21}/>Saved place</button><button onClick={()=>setSelected(v=>!v)}><Navigation size={21}/>Location</button></div><p className="map-caption">{selected?'A place in Ayira’s story':'Explore Ayira’s saved location'}</p></>}
+    </div>
+  </div>
+}
+
 function MailApp(){
   const [box,setBox]=useState<'inbox'|'mailboxes'>('inbox')
   return <div className="app-page mail-app story-mail">
@@ -378,17 +395,17 @@ function MailApp(){
   </div>
 }
 function ControlCenter({onClose,sound,setSound,brightness,setBrightness,lock}: {onClose:()=>void;sound:boolean;setSound:(v:boolean)=>void;brightness:number;setBrightness:(v:number)=>void;lock:()=>void}){
-  const [wifi,setWifi]=useState(true),[bt,setBt]=useState(true),[airplane,setAirplane]=useState(false),[focus,setFocus]=useState(false),[flash,setFlash]=useState(false)
+  const [wifi,setWifi]=useLocal('wifi',true),[bt,setBt]=useLocal('bluetooth',true),[airplane,setAirplane]=useLocal('airplane',false),[focus,setFocus]=useLocal('focus',false),[flash,setFlash]=useState(false)
   return <div className="control-center-backdrop" onClick={onClose}><div className="control-center" onClick={e=>e.stopPropagation()}><div className="control-header"><span>{clockTime()}</span><button onClick={onClose}><X size={22}/></button></div><div className="cc-grid"><div className="cc-connectivity"><div className="cc-connect-main"><button className={airplane?'enabled':''} onClick={()=>setAirplane(!airplane)}><Plane size={20}/></button><span>Airplane Mode</span></div><div className="cc-connect-main"><button className={wifi?'enabled':''} onClick={()=>setWifi(!wifi)}><Wifi size={20}/></button><span>Wi-Fi</span></div><div className="cc-connect-main"><button className={bt?'enabled':''} onClick={()=>setBt(!bt)}><Bluetooth size={20}/></button><span>Bluetooth</span></div><div className="cc-connect-main"><button className="enabled"><Signal size={20}/></button><span>Cellular</span></div></div><div className="cc-media"><Music2 size={26}/><span>Not Playing</span><div><button><Play size={21}/></button><button><ChevronRight size={21}/></button></div></div><button className="cc-tile" onClick={()=>setFocus(!focus)}><Moon size={25}/><span>{focus?'Focus On':'Focus'}</span></button><button className="cc-tile" onClick={()=>setSound(!sound)}>{sound?<Volume2 size={25}/>:<VolumeX size={25}/>}<span>{sound?'Sounds On':'Silent'}</span></button><div className="cc-slider"><Sun size={22}/><input aria-label="Brightness" type="range" min="40" max="100" value={brightness} onChange={e=>setBrightness(Number(e.target.value))}/></div><div className="cc-tile" onClick={()=>setFlash(!flash)} role="button" tabIndex={0}><Flashlight size={26} color={flash?'#ffd451':'white'}/><span>Flashlight</span></div><button className="cc-tile" onClick={lock}><LockKeyhole size={25}/><span>Lock Screen</span></button></div><div className="control-bottom">Swipe up or tap × to close</div></div></div>
 }
 function Notifications({close,openMessages}:{close:()=>void;openMessages:()=>void}){return <div className="notification-layer" onClick={close}><div className="notification-panel" onClick={e=>e.stopPropagation()}><button onClick={close}><X size={20}/></button><span>{dateLabel()}</span><h2>Notification Center</h2><button className="notification-item" onClick={()=>{close();openMessages()}}><span className="notif-icon"><MessageCircle size={20}/></span><div><strong>Messages</strong><p>Baby: Text me when you’re free, okay? 🤍</p></div><small>now</small></button><p className="notif-helper">Story notifications will appear here.</p></div></div>}
 function Spotlight({close,open}:{close:()=>void;open:(a:AppId)=>void}){const [q,setQ]=useState('');return <div className="spotlight-layer"><div className="spotlight-search"><Search size={20}/><input placeholder="Search" autoFocus value={q} onChange={e=>setQ(e.target.value)}/><button onClick={close}>Cancel</button></div><div className="spotlight-results">{appList.filter(a=>a.title.toLowerCase().includes(q.toLowerCase())).slice(0,8).map(a=><button key={a.id} onClick={()=>{close();open(a.id)}}><AppIcon app={a}/><span>{a.title}</span></button>)}</div><div className="spotlight-hint">Search Ayira’s apps</div></div>}
-function AppIcon({app}:{app:typeof appList[number]}){return <div className={`app-icon app-icon-${app.id}`}><IosIcon id={app.id}/></div>}
+function AppIcon({app}:{app:typeof appList[number]}){return <div className={`app-icon app-icon-${app.id}`} style={{background:app.color}}><IosIcon id={app.id}/></div>}
 function Home({open,wall,doSpotlight}:{open:(id:AppId)=>void;wall:number;doSpotlight:()=>void}){
   const [page,setPage] = useState(0)
   const touchStart = useRef<number | null>(null)
   const dock=['phone','safari','messages','music'] as AppId[]
-  const firstIds:AppId[]=['calendar','photos','camera','mail','clock','maps','weather','notes'];const pages=[appList.filter(a=>firstIds.includes(a.id)),appList.filter(a=>!firstIds.includes(a.id)&&!dock.includes(a.id))]
+  const firstIds:AppId[]=['calendar','photos','camera','mail','clock','maps','weather','notes','reminders','files','settings','contacts'];const pages=[appList.filter(a=>firstIds.includes(a.id)),appList.filter(a=>!firstIds.includes(a.id)&&!dock.includes(a.id))]
   const onPageMove=(x:number)=>{
     if(touchStart.current===null) return
     const dx=x-touchStart.current
@@ -396,11 +413,11 @@ function Home({open,wall,doSpotlight}:{open:(id:AppId)=>void;wall:number;doSpotl
     touchStart.current=null
   }
   return <div className={`home-screen wallpaper-${wall}`}>
-    <StoryMedia name="homescreen" className="story-wallpaper-image" alt=""/>
+    {wall===0&&<StoryMedia name="homescreen" className="story-wallpaper-image" alt=""/>}
     <div className="home-scroll" onTouchStart={e=>touchStart.current=e.touches[0].clientX} onTouchEnd={e=>onPageMove(e.changedTouches[0].clientX)}>
       {page===0&&<div className="home-widgets">
-        <button className="weather-widget" onClick={()=>open('weather')} aria-label="Open Weather"><CloudSun size={25} fill="#fff2b9"/><span>Subic, Olongapo</span><b>31°</b><small>Sunny</small></button>
-        <button className="calendar-widget" onClick={()=>open('calendar')} aria-label="Open Calendar"><small>{'SATURDAY'}</small><b>30</b><span>Her birthday</span></button>
+        <button className="weather-widget" onClick={()=>open('weather')} aria-label="Open Weather"><span>Subic</span><b>31°</b><Sun size={22} fill="#ffdb55" color="#ffdb55"/><small>Sunny<br/>H:33° L:26°</small></button>
+        <button className="calendar-widget" onClick={()=>open('calendar')} aria-label="Open Calendar"><small>SATURDAY</small><b>30</b><span><i/>Her birthday<em>All-day</em></span></button>
       </div>}
       <div className={`home-grid home-grid-page-${page}`} key={page}>{pages[page].map(a=><button className="home-app" key={a.id} onClick={()=>open(a.id)}><AppIcon app={a}/><span>{a.title}</span></button>)}</div>
     </div>
@@ -409,7 +426,9 @@ function Home({open,wall,doSpotlight}:{open:(id:AppId)=>void;wall:number;doSpotl
   </div>
 }
 export default function App(){
-  const [screen,setScreen]=useState<Screen>('lock'),[requestPasscode,setRequestPasscode]=useState(false),[appOrigin,setAppOrigin]=useState({x:50,y:50}),[wall,setWall]=useLocal<number>('wallpaper',0),[sound,setSound]=useLocal<boolean>('sounds',true),[brightness,setBrightness]=useLocal<number>('brightness',100)
+  const [phoneScale,setPhoneScale]=useState(1)
+  useEffect(()=>{const fit=()=>setPhoneScale(Math.min(1,(window.innerWidth-24)/414,(window.innerHeight-24)/868));fit();window.addEventListener('resize',fit);return()=>window.removeEventListener('resize',fit)},[])
+  const [screen,setScreen]=useState<Screen>('lock'),[requestPasscode,setRequestPasscode]=useState(0),[appOrigin,setAppOrigin]=useState({x:50,y:50}),[wall,setWall]=useLocal<number>('wallpaper',0),[sound,setSound]=useLocal<boolean>('sounds',true),[brightness,setBrightness]=useLocal<number>('brightness',100)
   const [chats,setChats]=useLocal<Record<string,ChatMessage[]>>('chats',seedChats),[notes,setNotes]=useLocal<Note[]>('notes',defaultNotes),[events,setEvents]=useLocal<CalEvent[]>('calendar',[]),[reminders,setReminders]=useLocal<Reminder[]>('reminders',defaultReminders),[photos,setPhotos]=useLocal<SavedPhoto[]>('photos',[])
   const [control,setControl]=useState(false),[notifications,setNotifications]=useState(false),[spotlight,setSpotlight]=useState(false),[contactMessage,setContactMessage]=useState<string|null>(null)
   const [statusTime,setStatusTime]=useState(clockTime());useEffect(()=>{const id=window.setInterval(()=>setStatusTime(clockTime()),10000);return()=>clearInterval(id)},[])
@@ -424,10 +443,10 @@ export default function App(){
     setScreen(id);setSpotlight(false)
   },[play])
   const home=useCallback(()=>{play('tap');setScreen(current=>current==='lock'?'lock':'home');setControl(false);setNotifications(false);setSpotlight(false)},[play])
-  const unlock=()=>{play('lock');setRequestPasscode(false);setScreen('home')}
-  const lock=()=>{play('lock');setRequestPasscode(false);setScreen('lock');setControl(false)}
+  const unlock=()=>{play('lock');setRequestPasscode(0);setScreen('home')}
+  const lock=()=>{play('lock');setRequestPasscode(0);setScreen('lock');setControl(false);setNotifications(false);setSpotlight(false)}
   const onPointerDown=(e:ReactPointerEvent<HTMLDivElement>)=>{gestures.current={x:e.clientX,y:e.clientY,time:Date.now()}}
-  const onPointerUp=(e:ReactPointerEvent<HTMLDivElement>)=>{const s=gestures.current;gestures.current=null;if(!s)return;const dx=e.clientX-s.x,dy=e.clientY-s.y;if(Math.abs(dy)<72||Math.abs(dy)<Math.abs(dx)*1.15)return;const rect=e.currentTarget.getBoundingClientRect(),startY=s.y-rect.y,startX=s.x-rect.x;if(dy<0&&startY>rect.height-110){if(screen==='lock')setRequestPasscode(true);else home()}else if(dy>0&&startY<90&&startX>rect.width*.52){setControl(true)}else if(dy>0&&startY<90){setNotifications(true)}else if(dy>0&&screen==='home'&&startY<rect.height*.65){setSpotlight(true)}}
+  const onPointerUp=(e:ReactPointerEvent<HTMLDivElement>)=>{const s=gestures.current;gestures.current=null;if(!s)return;const dx=e.clientX-s.x,dy=e.clientY-s.y;if(Math.abs(dy)<72||Math.abs(dy)<Math.abs(dx)*1.15)return;const rect=e.currentTarget.getBoundingClientRect(),startY=s.y-rect.y,startX=s.x-rect.x;if(dy<0&&startY>rect.height-110){if(screen==='lock')setRequestPasscode(n=>n+1);else home()}else if(dy>0&&startY<90&&startX>rect.width*.52){setControl(true)}else if(dy>0&&startY<90){setNotifications(true)}else if(dy>0&&screen==='home'&&startY<rect.height*.65){setSpotlight(true)}}
   useEffect(()=>{const listener=(e:KeyboardEvent)=>{if(e.key==='Escape'){if(control)setControl(false);else if(notifications)setNotifications(false);else if(spotlight)setSpotlight(false);else if(screen!=='lock')home()}if(e.key==='Home' && screen!=='lock')home()};window.addEventListener('keydown',listener);return()=>window.removeEventListener('keydown',listener)},[control,notifications,spotlight,home,screen])
   useEffect(()=>{const fn=()=>home();window.addEventListener('ayira:home',fn);return()=>window.removeEventListener('ayira:home',fn)},[home])
   const goMessage=(id:string)=>{play('tap');setContactMessage(id);setScreen('messages')}
@@ -455,21 +474,21 @@ export default function App(){
       case 'mail':return <MailApp/>
     }
   }
-  return <div className="site-wrap">
+  return <div className="site-wrap" style={{'--phone-scale':phoneScale} as CSSProperties}>
     <main className="phone-stage" aria-label="Ayira Ross's interactive iPhone">
       <div className="iphone-frame">
-        <div className="iphone-glass" onPointerDown={onPointerDown} onPointerUp={onPointerUp} style={{filter:`brightness(${brightness}%)`}}>
+        <div className={`iphone-glass screen-${screen}`} onPointerDown={onPointerDown} onPointerUp={onPointerUp} style={{filter:`brightness(${brightness}%)`}}>
           <div className="statusbar">
-            <button onClick={()=>screen==='lock'?setRequestPasscode(true):setNotifications(true)} className={`status-time ${screen==='lock'||screen==='home'?'light':''}`}>{statusTime}</button>
+            <button onClick={()=>screen==='lock'?setRequestPasscode(n=>n+1):setNotifications(true)} className={`status-time ${screen==='lock'||screen==='home'?'light':''}`}>{statusTime}</button>
             <button className="dynamic-island" onClick={()=>screen!=='lock'&&setNotifications(true)} aria-label="Dynamic Island"><span/></button>
-            <button className={`status-icons ${screen==='lock'||screen==='home'?'light':''}`} onClick={()=>setControl(true)} aria-label="Open Control Center"><Signal size={17} fill="currentColor"/><Wifi size={16} strokeWidth={3}/><BatteryFull size={23} strokeWidth={2.5}/></button>
+            <button className={`status-icons ${screen==='lock'||screen==='home'?'light':''}`} onClick={()=>setControl(true)} aria-label="Open Control Center"><svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true">{[4,7,10,13].map((h,i)=><rect key={h} x={i*4.5} y={13-h} width="3.2" height={h} rx=".8" fill="currentColor"/>)}</svg><Wifi size={17} strokeWidth={2.7}/><svg width="27" height="14" viewBox="0 0 27 14" aria-hidden="true"><rect x=".5" y="1" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2.5" y="3" width="19" height="8" rx="1.5" fill="currentColor"/><path d="M25 5v4q3-2 0-4" fill="currentColor" opacity=".5"/></svg></button>
           </div>
           <AppFailureBoundary>
             <div key={screen} className={`screen-body ${screen==='home'||screen==='lock'?'no-app-bg':'app-animate'}`} style={{transformOrigin:`${appOrigin.x}% ${appOrigin.y}%`}}><ScreenRenderer render={content}/></div>
           </AppFailureBoundary>
           {screen!=='lock'&&<button className={`home-indicator ${screen==='home'||screen==='camera'?'indicator-light':''}`} onClick={home} aria-label="Go Home" title="Go Home"/>}
           {control&&<ControlCenter onClose={()=>setControl(false)} sound={sound} setSound={setSound} brightness={brightness} setBrightness={setBrightness} lock={lock}/>}
-          {notifications&&<Notifications close={()=>setNotifications(false)} openMessages={()=>open('messages')}/>}
+          {notifications&&<Notifications close={()=>setNotifications(false)} openMessages={()=>{if(screen==='lock')setRequestPasscode(n=>n+1);else goMessage('baby')}}/>}
           {spotlight&&<Spotlight close={()=>setSpotlight(false)} open={open}/>}
         </div>
         <div className="side-button side-volume-one"/><div className="side-button side-volume-two"/>
